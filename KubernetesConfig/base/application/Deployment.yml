@@ -96,10 +96,10 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "1000m"
-      volumes:
-        - name: tmp
-          emptyDir:
-            sizeLimit: 100Mi          
+    volumes:
+    - name: tmp
+      emptyDir:
+        sizeLimit: 100Mi        
 ---
 
 # Service configuration for the fastapi application, exposing the application to other services within the cluster 
