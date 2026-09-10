@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "partials/portfolio_card.html" import portfolio_card, journal_card %}
+{% from "partials/pagination.html" import pagination %}
+{% block title %}Portfolio — {{ business.name }}{% endblock %}
+{% block content %}
+<section class="container section">
+  <div class="page-heading"><h1>Every story.<br><em>A little different.</em></h1><p>A portfolio of people, places, and the moments in between.<br>Find a feeling that speaks to you.</p></div>
+  <form class="filter-form" method="get" action="{{ url_for('portfolio_list') }}">
+    <div class="field"><label for="portfolio-search">Find a story</label><input id="portfolio-search" type="search" name="q" value="{{ query }}" placeholder="Search titles or descriptions" maxlength="100"></div>
+    <div class="field"><label for="category">The occasion</label><select id="category" name="category"><option value="">All stories</option>{% for c in categories %}<option value="{{ c.value }}" {% if active_category == c %}selected{% endif %}>{{ c.value.replace('_', ' ')|title }}</option>{% endfor %}</select></div>
+    <button class="button" type="submit">Find stories <span aria-hidden="true">→</span></button>
+    {% if query or active_category %}<a class="text-link" href="/portfolios">Clear filters</a>{% endif %}
+  </form>
+  {% if journal %}
+  <div class="section-heading compact"><div><h2>The Instagram journal</h2><p>{{ journal|length }} selected {% if journal|length == 1 %}story{% else %}stories{% endif %} from our studio. Open a story to see its original post.</p></div><a class="text-link" href="https://www.instagram.com/wed_studiozs/" target="_blank" rel="noopener noreferrer">@wed_studiozs ↗</a></div>
+  <div class="story-grid">{% for story in journal %}{{ journal_card(story) }}{% endfor %}</div>
+  {% endif %}
+  <div id="collections" class="collections-section">
+    {% if page.items %}
+    <div class="section-heading compact"><div><h2>Studio collections</h2><p>{{ page.total }} {% if page.total == 1 %}collection{% else %}collections{% endif %} to explore.</p></div></div>
+    <div class="story-grid">{% for item in page.items %}{{ portfolio_card(item) }}{% endfor %}</div>
+    {{ pagination(page, request) }}
+    {% elif not journal %}
+    <div class="empty-state"><h2>No stories found.</h2><p>Try a different search or explore all our work.</p><a class="button button-outline" href="/portfolios">View all stories</a></div>
+    {% elif page.page > 1 %}
+    <div class="empty-state"><h2>You have reached the end.</h2><a class="text-link" href="{{ request.url.include_query_params(page=1) }}#collections">Back to the first page</a></div>
+    {% endif %}
+  </div>
+</section>
+<section class="closing-section"><div class="container closing-inner"><div><h2>Picture your day here.</h2><p>We would love to hear what you have in mind.</p></div><a class="button button-light" href="/inquiry">Tell us your story ↗</a></div></section>
+{% endblock %}

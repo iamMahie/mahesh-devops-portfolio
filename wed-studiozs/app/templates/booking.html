@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "partials/form_fields.html" import input, textarea, summary %}
+{% block title %}Book a consultation — {{ business.name }}{% endblock %}
+{% block content %}
+<section class="container section form-layout">
+  <div class="form-intro"><h1>Make a little<br><em>space to talk.</em></h1><p>Let's talk about the day, the details, and how you want to remember it.</p><p>Choose your preferred consultation date. This is a request, not a confirmed appointment — the studio will follow up to arrange a time.</p><a class="text-link" href="/portfolios">Find a little inspiration first ↗</a></div>
+  <div class="form-panel">
+    {{ summary(errors, error) }}
+    <form method="post" action="{{ url_for('booking_submit') }}" class="form-grid" data-submit-label="Sending your request…">
+      {{ input('customer_name', 'Your name', values, errors, required=true, minlength=2, autocomplete='name') }}
+      {{ input('email', 'Email address', values, errors, type='email', required=true, maxlength=254, autocomplete='email') }}
+      <div class="full-width">{{ input('booking_date', 'Preferred date', values, errors, type='date', required=true, min=today) }}</div>
+      {{ textarea('notes', 'A little about your plans', values, errors, maxlength=2000) }}
+      <div class="full-width"><p class="form-note">Name, email, and a preferred date are required. We use them to arrange your consultation.</p><button class="button" type="submit">Request consultation <span aria-hidden="true">↗</span></button></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

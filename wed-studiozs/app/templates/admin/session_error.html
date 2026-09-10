@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+{% block title %}Session check · {{ business.name }}{% endblock %}
+{% block auth %}
+<section class="admin-login">
+  <h1>Sign-out check failed.</h1>
+  <p class="admin-notice admin-error" role="alert">{{ error }}</p>
+  <p>Your session has not been changed. Return to the workspace and sign out again.</p>
+  <a class="admin-button" href="/admin">Return to workspace</a>
+</section>
+{% endblock %}

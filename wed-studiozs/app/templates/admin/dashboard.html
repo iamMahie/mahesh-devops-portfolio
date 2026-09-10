@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ heading }} · {{ business.name }}{% endblock %}
+{% block workspace %}
+<header class="admin-heading">
+  <div><h1>{{ heading }}</h1><p class="admin-intro">{{ description }}</p></div>
+  {% if section == 'portfolios' %}<button type="button" class="admin-button" id="create-portfolio">New portfolio</button>{% endif %}
+</header>
+<noscript><p class="admin-notice admin-error">This workspace needs JavaScript to load records and save changes. Enable JavaScript and reload. Sign out remains available in the menu.</p></noscript>
+<div id="workspace-feedback" class="admin-notice" role="status" aria-live="polite" hidden></div>
+{% if section == 'overview' %}
+<section aria-labelledby="attention-heading">
+  <div class="admin-section-heading"><h2 id="attention-heading">On your desk</h2><button class="admin-button admin-secondary" type="button" id="refresh-overview">Refresh</button></div>
+  <div id="overview-counts" class="admin-counts" aria-busy="true"><p>Loading studio activity…</p></div>
+</section>
+<section class="admin-overview-next">
+  <h2>A clear path through the day.</h2>
+  <div class="admin-task-links">
+    <a href="/admin/inquiries"><strong>Follow up on enquiries <span aria-hidden="true">→</span></strong><span>Review the details and move conversations forward.</span></a>
+    <a href="/admin/bookings"><strong>Review consultations <span aria-hidden="true">→</span></strong><span>Coordinate with customers before confirming a request.</span></a>
+    <a href="/admin/portfolios"><strong>Keep the work current <span aria-hidden="true">→</span></strong><span>Publish collections, arrange photographs and select covers.</span></a>
+  </div>
+</section>
+{% else %}
+<section id="record-editor" class="admin-editor" aria-labelledby="editor-heading" hidden>
+  <div class="admin-section-heading"><h2 id="editor-heading" tabindex="-1">Record details</h2><button type="button" class="admin-button admin-secondary" id="close-editor">Close details</button></div>
+  <div id="editor-feedback" class="admin-notice" role="status" aria-live="polite" hidden></div>
+  <div id="editor-content"></div>
+</section>
+<form id="record-filters" class="admin-filters" role="search" aria-label="Filter {{ heading | lower }}">
+  <div class="admin-field admin-search"><label for="search">Search {{ heading | lower }}</label><input type="search" id="search" name="search" maxlength="100" placeholder="{{ 'Title or description' if section == 'portfolios' else 'Name or email' }}"></div>
+  {% if section in ['inquiries', 'bookings'] %}
+  <div class="admin-field"><label for="filter-status">Status</label><select name="status" id="filter-status"><option value="">All statuses</option>{% for status in inquiry_statuses if section == 'inquiries' %}<option value="{{ status.value }}">{{ status.value | title }}</option>{% endfor %}{% for status in booking_statuses if section == 'bookings' %}<option value="{{ status.value }}">{{ status.value | title }}</option>{% endfor %}</select></div>
+  <div class="admin-field"><label for="date-from">{{ 'Event' if section == 'inquiries' else 'Consultation' }} from</label><input id="date-from" type="date" name="{{ 'event_from' if section == 'inquiries' else 'date_from' }}"></div>
+  <div class="admin-field"><label for="date-to">To</label><input id="date-to" type="date" name="{{ 'event_to' if section == 'inquiries' else 'date_to' }}"></div>
+  {% elif section == 'messages' %}
+  <div class="admin-field"><label for="filter-read">Read state</label><select id="filter-read" name="is_read"><option value="">All messages</option><option value="false">Unread</option><option value="true">Read</option></select></div>
+  {% else %}
+  <div class="admin-field"><label for="filter-category">Category</label><select id="filter-category" name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.value }}">{{ category.label }}</option>{% endfor %}</select></div>
+  <div class="admin-field"><label for="filter-featured">Featured</label><select id="filter-featured" name="is_featured"><option value="">All portfolios</option><option value="true">Featured</option><option value="false">Not featured</option></select></div>
+  {% endif %}
+  <div class="admin-filter-actions"><button class="admin-button" type="submit">Apply</button><button class="admin-button admin-secondary" type="reset">Reset</button></div>
+</form>
+<section aria-labelledby="records-heading">
+  <div class="admin-section-heading"><h2 id="records-heading">All {{ heading | lower }}</h2><button type="button" id="refresh-records" class="admin-button admin-secondary">Refresh</button></div>
+  <p id="records-summary" class="admin-help" aria-live="polite">Loading records…</p>
+  <div id="records" class="admin-records" aria-busy="true"></div>
+  <nav class="admin-pagination" aria-label="Record pages">
+    <button type="button" class="admin-button admin-secondary" id="previous-page" disabled>← Previous</button>
+    <span id="page-label"></span>
+    <button type="button" class="admin-button admin-secondary" id="next-page" disabled>Next →</button>
+  </nav>
+</section>
+{% endif %}
+<dialog id="delete-dialog" class="admin-dialog" aria-labelledby="delete-heading" aria-describedby="delete-description">
+  <h2 id="delete-heading">Delete this record?</h2>
+  <p id="delete-description"></p>
+  <p>This cannot be undone.</p>
+  <div class="admin-actions"><button type="button" class="admin-button admin-secondary" id="cancel-delete" autofocus>Keep record</button><button type="button" class="admin-button admin-danger" id="confirm-delete">Delete permanently</button></div>
+</dialog>
+{% if section == 'portfolios' %}
+<template id="portfolio-form-template">
+  <form id="portfolio-form" class="admin-form">
+    <div class="admin-field"><label for="portfolio-title">Portfolio title</label><input id="portfolio-title" name="title" minlength="3" maxlength="200" required></div>
+    <div class="admin-field-pair">
+      <div class="admin-field"><label for="portfolio-category">Category</label><select id="portfolio-category" name="category" required>{% for category in categories %}<option value="{{ category.value }}">{{ category.label }}</option>{% endfor %}</select></div>
+      <div class="admin-field"><label for="portfolio-slug">Page address <span>(optional for new portfolios)</span></label><input id="portfolio-slug" name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="220" aria-describedby="slug-help"><small id="slug-help">Lowercase words separated by hyphens. Changing an existing address breaks old links.</small></div>
+    </div>
+    <div class="admin-field"><label for="portfolio-description">Description <span>(optional)</span></label><textarea id="portfolio-description" name="description" rows="5" maxlength="5000"></textarea></div>
+    <div class="admin-field"><label for="portfolio-cover">Cover image URL <span>(optional)</span></label><input id="portfolio-cover" name="cover_image_url" maxlength="500" aria-describedby="cover-help"><small id="cover-help">Use an HTTPS image URL or a local /static/ image path. Images are linked, not uploaded.</small></div>
+    <label class="admin-checkbox"><input type="checkbox" name="is_featured">Feature this portfolio on the website</label>
+    <div class="admin-actions"><button type="submit" class="admin-button">Save portfolio</button><a id="portfolio-public-link" class="admin-button admin-secondary" target="_blank" rel="noopener" hidden>View published page <span class="sr-only">(opens a new tab)</span></a></div>
+  </form>
+</template>
+{% endif %}
+{% endblock %}

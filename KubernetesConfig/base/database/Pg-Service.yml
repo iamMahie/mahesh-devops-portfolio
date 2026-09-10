@@ -1,0 +1,13 @@
+# Service configuration for the PostgreSQL database, exposing the database to other services within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: application-database
+spec:
+  clusterIP: None  # Headless service to allow direct access to the database pods
+  selector:
+    app: postgres
+  ports:
+    - name: pg
+      port: 5432    # The port that the service will expose to other services within the cluster

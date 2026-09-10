@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "partials/form_fields.html" import input, textarea, summary %}
+{% block title %}Tell us your story — {{ business.name }}{% endblock %}
+{% block content %}
+<section class="container section form-layout">
+  <div class="form-intro"><h1>It starts with<br><em>your story.</em></h1><p>A date, a place, a feeling. Tell us what you have in mind, and we will take the conversation from there.</p><p>No date yet? No problem. Share what you know.</p><figure class="form-photo"><img src="/static/img/DZPAihNH5lW.jpg" alt="A pre-wedding moment on temple steps" width="512" height="640"><figcaption>From our pre-wedding journal.</figcaption></figure></div>
+  <div class="form-panel">
+    {{ summary(errors, error) }}
+    <form method="post" action="{{ url_for('inquiry_submit') }}" class="form-grid" data-submit-label="Sending your enquiry…">
+      {{ input('customer_name', 'Your name', values, errors, required=true, minlength=2, autocomplete='name') }}
+      {{ input('email', 'Email address', values, errors, type='email', required=true, maxlength=254, autocomplete='email') }}
+      {{ input('phone', 'Phone number', values, errors, type='tel', maxlength=30, autocomplete='tel') }}
+      {{ input('event_date', 'Event date', values, errors, type='date', min=today) }}
+      {{ input('location', 'Where is it happening?', values, errors, maxlength=200) }}
+      <div class="field"><label for="package_interest">Coverage preference <span>(optional)</span></label><select id="package_interest" name="package_interest" {% if errors.get('package_interest') %}aria-invalid="true" aria-describedby="package_interest-error"{% endif %}><option value="">Let's figure it out together</option>{% for p in packages %}<option value="{{ p.value }}" {% if values.get('package_interest') == p.value %}selected{% endif %}>{{ p.value|title }}</option>{% endfor %}</select>{% if errors.get('package_interest') %}<p class="field-error" id="package_interest-error">{{ errors.package_interest }}</p>{% endif %}</div>
+      {{ textarea('message', 'What would you love us to know?', values, errors) }}
+      <div class="full-width"><p class="form-note">Your name and email are required. We use these details to respond to your enquiry.</p><button class="button" type="submit">Send enquiry <span aria-hidden="true">↗</span></button></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

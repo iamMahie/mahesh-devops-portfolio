@@ -1,0 +1,15 @@
+{% macro portfolio_card(item) %}
+<article class="story-card">
+  <a class="story-image" href="/portfolios/{{ item.slug }}">
+    {% if item.cover_image_url %}<img src="{{ item.cover_image_url }}" alt="{{ item.title }}" loading="lazy" decoding="async" width="512" height="640">{% else %}<span class="image-placeholder">A story waiting to unfold</span>{% endif %}
+  </a>
+  <div class="story-caption"><p>{{ item.category.value.replace('_', ' ')|title }}{% if item.is_featured %} · Featured{% endif %}</p><h3><a href="/portfolios/{{ item.slug }}">{{ item.title }} <span aria-hidden="true">↗</span></a></h3></div>
+</article>
+{% endmacro %}
+
+{% macro journal_card(story) %}
+<article class="story-card">
+  <a class="story-image" href="/journal/{{ story.slug }}"><img src="{{ story.image_url }}" alt="{{ story.alt }}" loading="lazy" decoding="async" width="512" height="640"></a>
+  <div class="story-caption"><p>{{ story.category.value.replace('_', ' ')|title }}</p><h3><a href="/journal/{{ story.slug }}">{{ story.title }} <span aria-hidden="true">↗</span></a></h3></div>
+</article>
+{% endmacro %}

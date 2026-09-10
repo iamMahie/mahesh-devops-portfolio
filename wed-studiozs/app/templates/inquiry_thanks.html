@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} — {{ business.name }}{% endblock %}
+{% block content %}
+<section class="container">
+  <div class="confirmation">
+    <span class="confirmation-symbol" aria-hidden="true">✓</span>
+    <h1>Thanks, {{ receipt.name }}!</h1>
+    <p class="large-copy">{{ heading }}</p>
+    <span class="confirmation-reference">Your reference: #{{ receipt.reference }}</span>
+    <p>{{ message }}</p>
+    {% if receipt.date %}<p>Preferred date: <strong>{{ receipt.date }}</strong>. The studio will contact you to confirm the arrangements.</p>{% endif %}
+    <p>This receipt is available in this browser for ten minutes. Keep your reference if you need to get in touch.</p>
+    <div class="confirmation-actions"><a class="button" href="/portfolios">Keep exploring our stories ↗</a><a class="text-link" href="/">Back to home</a></div>
+  </div>
+</section>
+{% endblock %}

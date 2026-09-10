@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wed-studiozs-deployment
+  namespace: wed-studiozs
+spec:
+  # ReplicaSet configuration to define the number of pod replicas for the deployment
+  replicas: 1
+  revisionHistoryLimit: 5    # Keep the last 5 versions for the dpeloyment to allow rollback
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1           # Create up to 2 additional pods during the update
+      maxUnavailable: 0     # Allow up to 0 pod to be unavailable during the update
+  # Selector is used to identify the pods that belong to this deployment
+  selector:
+    matchLabels:
+      app: wed-studiozs-app
+  # Template defines the pod specification for the deployment
+  template:
+    metadata:
+      labels:
+        app: wed-studiozs-app
+        version: v1.0
+    # Pod specification for the deployment, including container configuration, probes, and resource management
+    spec:
+      terminationGracePeriodSeconds: 60  # Allow pods that are being terminated to finish their work gracefully
+      securityContext:
+        runAsNonRoot : true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile: 
+          type: RuntimeDefault
+      containers:
+        - name: wed-studiozs-app
+          securityContext: 
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: 
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          image: docker.io/maheshcherakapu/wed-studiozs-app:v1.0 # Use the image built from the Dockerfile for the application
+          imagePullPolicy: IfNotPresent # Only pull the image if it is not already present on the node
+          ports:
+            - containerPort: 8000
+          env:
+            - name: POSTGRES_USER
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_USER } }
+            - name: POSTGRES_DB
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_DB } }
+            - name: POSTGRES_HOST
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_HOST } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: POSTGRES_PASSWORD } }
+            - name: SECRET_KEY
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: SECRET_KEY } }
+            # must come LAST — expansion only sees vars above it
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+          # StartUp Probe to check if the container finished it's initialization
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            periodSeconds: 10
+            failureThreshold: 10
+          # Readiness probe to check if the application is ready to serve traffic
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          # Liveness probe to check if the application is still running and healthy
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          # Delay termination to allow in-flight requests to complete
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
+          # Resource requests and limits to ensure the pod has enough resources to run efficiently and prevent resource contention
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi          
+---
+
+# Service configuration for the fastapi application, exposing the application to other services within the cluster 
+apiVersion: v1
+kind: Service
+metadata:
+  name: wed-studiozs-service
+  namespace: wed-studiozs
+spec:
+  type: ClusterIP # The service is only accessible within the cluster
+  selector:
+    app: wed-studiozs-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000    # The port that the service will expose to other services within the cluster
+      targetPort: 8000  # The port on the pod that the service will forward traffic to

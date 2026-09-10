@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Studio workspace · {{ business.name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/admin.css') }}">
+  {% if admin %}
+  <meta name="csrf-token" content="{{ csrf }}">
+  <script src="{{ url_for('static', path='js/admin.js') }}" defer></script>
+  {% endif %}
+</head>
+<body class="admin-body">
+  <!-- THESIS: A working studio desk, not an analytics spectacle.
+  OWN-WORLD: Paper, ink and plum; square controls, system sans, clear ruled lists.
+  STORY: See the work, follow up with customers, publish real photographs.
+  FIRST VIEWPORT: Plum navigation at left; a spacious heading and task list at right.
+  FORM: Brief-pinned operational workspace; responsive document-flow navigation. -->
+  <a class="admin-skip" href="#main">Skip to workspace</a>
+  {% if admin %}
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="/admin">{{ business.name }}<span>Studio workspace</span></a>
+      <button class="admin-menu-button" id="admin-menu" type="button" aria-expanded="false" aria-controls="admin-navigation" hidden>Menu</button>
+      <nav id="admin-navigation" aria-label="Studio workspace">
+        {% for key, details in sections.items() %}
+        <a href="/admin{{ '/' ~ key if key != 'overview' else '' }}" {% if section == key %}aria-current="page"{% endif %}>{{ details[0] }}</a>
+        {% endfor %}
+      </nav>
+      <div class="admin-account">
+        <p>{{ admin.full_name or admin.email }}<span>{{ admin.email }}</span></p>
+        <a href="/" target="_blank" rel="noopener">View website <span aria-hidden="true">↗</span><span class="sr-only"> (opens a new tab)</span></a>
+        <form method="post" action="/admin/logout">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button type="submit" class="admin-signout">Sign out</button>
+        </form>
+      </div>
+    </aside>
+    <main id="main" class="admin-main" tabindex="-1" data-section="{{ section }}" data-api="{{ api_prefix }}" data-page-size="{{ page_size }}">
+      {% block workspace %}{% endblock %}
+    </main>
+  </div>
+  {% else %}
+  <main id="main" class="admin-auth" tabindex="-1">{% block auth %}{% endblock %}</main>
+  {% endif %}
+</body>
+</html>

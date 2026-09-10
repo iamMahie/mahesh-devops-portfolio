@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% block title %}Sign in · {{ business.name }}{% endblock %}
+{% block auth %}
+<a href="/" class="admin-auth-brand">{{ business.name }}</a>
+<section class="admin-login" aria-labelledby="login-heading">
+  <h1 id="login-heading">Back to the studio.</h1>
+  <p class="admin-intro">Sign in to manage your photographs and customer conversations.</p>
+  {% if error %}<div class="admin-notice admin-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" action="/admin/login" class="admin-form">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="admin-field">
+      <label for="email">Admin email</label>
+      <input id="email" name="email" type="email" value="{{ email }}" autocomplete="username" maxlength="254" required autofocus>
+    </div>
+    <div class="admin-field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required>
+    </div>
+    <button class="admin-button" type="submit">Sign in</button>
+  </form>
+  <p class="admin-help">For studio administrators only. Need access? Contact the person who manages your studio account.</p>
+</section>
+<a href="/" class="admin-back">← Return to the website</a>
+{% endblock %}

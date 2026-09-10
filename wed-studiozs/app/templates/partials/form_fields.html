@@ -1,0 +1,24 @@
+{% macro input(name, label, values, errors, type='text', required=false, maxlength=150, minlength=none, autocomplete=none, hint=none, min=none) %}
+<div class="field">
+  <label for="{{ name }}">{{ label }}{% if not required %} <span>(optional)</span>{% endif %}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}" {% if required %}required{% endif %} maxlength="{{ maxlength }}" {% if minlength %}minlength="{{ minlength }}"{% endif %} {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %} {% if min %}min="{{ min }}"{% endif %} {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% elif hint %}aria-describedby="{{ name }}-help"{% endif %}>
+  {% if errors.get(name) %}<p class="field-error" id="{{ name }}-error">{{ errors[name] }}</p>{% elif hint %}<p class="field-help" id="{{ name }}-help">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label, values, errors, maxlength=5000, required=false, minlength=none, rows=5) %}
+<div class="field full-width">
+  <label for="{{ name }}">{{ label }}{% if not required %} <span>(optional)</span>{% endif %}</label>
+  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}" maxlength="{{ maxlength }}" {% if required %}required{% endif %} {% if minlength %}minlength="{{ minlength }}"{% endif %} {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>{{ values.get(name, '') }}</textarea>
+  {% if errors.get(name) %}<p class="field-error" id="{{ name }}-error">{{ errors[name] }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro summary(errors, error) %}
+{% if errors or error %}
+<div class="notice notice-error" id="form-errors" role="alert" tabindex="-1">
+  <strong>{{ error or 'A few details need another look.' }}</strong>
+  {% if errors %}<ul>{% for name, message in errors.items() %}<li><a href="#{{ name }}">{{ name.replace('_', ' ')|capitalize }}: {{ message }}</a></li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}
+{% endmacro %}

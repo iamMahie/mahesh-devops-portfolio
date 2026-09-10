@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "partials/form_fields.html" import input, textarea, summary %}
+{% block title %}Say hello — {{ business.name }}{% endblock %}
+{% block content %}
+<section class="container section form-layout">
+  <div class="form-intro"><h1>A good story<br>starts with <em>hello.</em></h1><p>A question, an idea, or something you would like to create together. We would love to hear it.</p>
+    <dl class="contact-options"><div><dt>On Instagram</dt><dd><a href="https://www.instagram.com/wed_studiozs/" target="_blank" rel="noopener noreferrer">@wed_studiozs ↗</a></dd></div>{% if business.phone %}<div><dt>Call the studio</dt><dd><a href="tel:{{ business.phone.replace(' ', '') }}">{{ business.phone }}</a></dd></div>{% endif %}{% if business.email %}<div><dt>Email</dt><dd><a href="mailto:{{ business.email }}">{{ business.email }}</a></dd></div>{% endif %}{% if business.address %}<div><dt>Studio address</dt><dd>{{ business.address }}</dd></div>{% endif %}</dl>
+    <p>Planning your celebration?</p><a class="text-link" href="/inquiry">Tell us about your day ↗</a>
+  </div>
+  <div class="form-panel">
+    {{ summary(errors, error) }}
+    <form method="post" action="{{ url_for('contact_submit') }}" class="form-grid" data-submit-label="Sending your message…">
+      {{ input('name', 'Your name', values, errors, required=true, minlength=2, autocomplete='name') }}
+      {{ input('email', 'Email address', values, errors, type='email', required=true, maxlength=254, autocomplete='email') }}
+      <div class="full-width">{{ input('subject', 'What is it about?', values, errors, required=true, minlength=3, maxlength=200) }}</div>
+      {{ textarea('message', 'Your message', values, errors, required=true, minlength=10) }}
+      <div class="full-width"><p class="form-note">All fields are required. Your details are used to respond to this message.</p><button class="button" type="submit">Send message <span aria-hidden="true">↗</span></button></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

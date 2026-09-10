@@ -1,0 +1,9 @@
+{% macro pagination(page, request) %}
+{% if page.pages > 1 %}
+<nav class="pagination" aria-label="Collection pages">
+  {% if page.page > 1 %}<a class="button button-outline" href="{{ request.url.include_query_params(page=page.page - 1) }}#collections">← Previous</a>{% else %}<span>Previous</span>{% endif %}
+  <span>Page {{ page.page }} of {{ page.pages }}</span>
+  {% if page.page < page.pages %}<a class="button button-outline" href="{{ request.url.include_query_params(page=page.page + 1) }}#collections">Next →</a>{% else %}<span>Next</span>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}

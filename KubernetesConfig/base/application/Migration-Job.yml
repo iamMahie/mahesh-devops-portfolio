@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration-job
+  namespace: wed-studiozs
+spec:
+  backoffLimit: 3                       # The number of retries before considering the job as failed
+  activeDeadlineSeconds: 500            # The maximum time in seconds that the job is allowed to run before being terminated
+  ttlSecondsAfterFinished: 86400          # The time in seconds to retain the job after it has completed (either succeeded or failed)
+  template:
+    metadata:
+      labels:
+        app: db-migration
+    spec:
+      restartPolicy: Never               # The job will not restart the pod if it fails
+      containers:
+        - name: db-migration
+          image: docker.io/maheshcherakapu/wed-studiozs-app:v1.0 # Use the same image as the application for consistency
+          imagePullPolicy: IfNotPresent # Only pull the image if it is not already present on the node
+          command: ["alembic", "upgrade", "head"] # Command to run the database migrations
+          env:
+            - name: POSTGRES_USER
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_USER } }
+            - name: POSTGRES_DB
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_DB } }
+            - name: POSTGRES_HOST
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_HOST } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: POSTGRES_PASSWORD } }
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"

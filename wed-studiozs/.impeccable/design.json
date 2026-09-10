@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-10T00:00:00Z",
+  "title": "Design System: WED STUDIOZS",
+  "extensions": {
+    "shadows": [],
+    "motion": [
+      {"name": "journal-reveal", "value": ".9s cubic-bezier(.16, 1, .3, 1)", "purpose": "One entrance for the already-visible home photograph strip; disabled with reduced motion."},
+      {"name": "control-feedback", "value": ".2s", "purpose": "Button background and text feedback without layout movement."}
+    ],
+    "breakpoints": [
+      {"name": "intermediate", "value": "1000px"},
+      {"name": "mobile", "value": "760px"},
+      {"name": "narrow", "value": "420px"}
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A direct action in the studio's plum.",
+      "html": "<button class=\"studio-action\">Send enquiry</button>",
+      "css": ".studio-action{background:var(--plum,#4b2440);color:#fff;min-height:52px;border:1px solid var(--plum,#4b2440);padding:12px 23px;font:500 15px/1.4 system-ui;cursor:pointer}.studio-action:hover{background:#34182d}.studio-action:focus-visible{outline:3px solid #996186;outline-offset:5px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The photography journal",
+    "overview": "Actual studio photographs lead. Soft-white surfaces, deep plum actions, uncropped prints, and restrained typography keep the interface out of the way.",
+    "keyCharacteristics": ["Real studio photography", "Uncropped contact sheets", "Progressively enhanced forms", "Practical studio administration"],
+    "rules": [],
+    "dos": ["Preserve original artwork and attribution.", "Explain failures and keep customer input."],
+    "donts": ["Do not invent proof or availability.", "Do not present a curated snapshot as a live Instagram feed."]
+  }
+}

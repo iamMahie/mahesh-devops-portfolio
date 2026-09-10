@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ portfolio.title }} — {{ business.name }}{% endblock %}
+{% block content %}
+<article class="container section story-detail">
+  <a class="back-link" href="/portfolios">← Back to the portfolio</a>
+  <div class="page-heading"><h1>{{ portfolio.title }}</h1><div><p>{{ portfolio.category.value.replace('_', ' ')|title }}</p><p>{{ portfolio.description or 'A collection of moments from our studio.' }}</p></div></div>
+  {% if portfolio.cover_image_url %}<a class="detail-cover" href="{{ portfolio.cover_image_url }}" data-lightbox data-caption="{{ portfolio.title }}"><img src="{{ portfolio.cover_image_url }}" alt="{{ portfolio.title }}" width="960" height="1200" fetchpriority="high"></a>{% endif %}
+  <div class="section-heading"><h2>The gallery</h2><p>{{ portfolio.images|length }} photographs · Select an image to see it in full.</p></div>
+  {% if portfolio.images %}<div class="gallery-grid">{% for image in portfolio.images %}<a href="{{ image.image_url }}" data-lightbox data-caption="{{ image.title or portfolio.title }}"><img src="{{ image.image_url }}" alt="{{ image.title or portfolio.title }}" loading="lazy" width="512" height="640"></a>{% endfor %}</div>{% else %}<p class="muted">More photographs will be added to this collection.</p>{% endif %}
+</article>
+<section class="closing-section"><div class="container closing-inner"><div><h2>Like this feeling?</h2><p>Let's find the story in your day.</p></div><a class="button button-light" href="/inquiry">Start a conversation ↗</a></div></section>
+{% endblock %}

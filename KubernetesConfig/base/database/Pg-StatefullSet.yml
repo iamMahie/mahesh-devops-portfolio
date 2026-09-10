@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: wed-studiozs
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        seccompProfile: 
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60  # Allow pods that are being terminated to finish their work gracefully
+      containers:
+        - name: postgres
+          securityContext: 
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: 
+              drop: ["ALL"]
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent # Only pull the image if it is not already present on the node
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_USER } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secrets, key: POSTGRES_PASSWORD } }
+            - name: POSTGRES_DB
+              valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_DB } }
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+          - name: data
+            mountPath: /var/lib/postgresql/data
+          - name: postgres-run
+            mountPath: /var/run/postgresql
+          - name: tmp
+            mountPath: /tmp
+
+          resources:
+            requests: 
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      # Temporary and empty volumes/ directories for postgresql to write system related files
+      volumes:
+        - name: postgres-run
+          emptyDir:
+            sizeLimit: 10Mi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi
+
+  # Persistent storage to save data even when a pod fails/crashes
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 20Gi

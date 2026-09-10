@@ -1,0 +1,21 @@
+# docker images
+.DockerFile*
+
+# Roadmap documentation
+DEVOPS-ROADMAP.md
+
+# Docker env file
+.env
+
+# secrets
+.secrets
+
+# Secrets yaml file
+**/Secrets.yml
+
+# wheelhouse 
+**/wheelhouse/
+
+# docs
+PROGRESS.md
+AGENDA.md

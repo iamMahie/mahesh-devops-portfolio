@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4b2440">
+  <meta name="description" content="{% block description %}Wedding and event photography by WED STUDIOZS. Explore our stories and tell us about yours.{% endblock %}">
+  <title>{% block title %}{{ business.name }}{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', path='/img/favicon.svg') }}" type="image/svg+xml">
+  <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
+  {% block head %}{% endblock %}
+  <script src="{{ url_for('static', path='/js/main.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="wordmark" href="{{ url_for('home') }}" aria-label="{{ business.name }} home">
+        <span class="brand-symbol" aria-hidden="true">w.</span>
+        <span>WED<span class="wordmark-sub">STUDIOZS</span></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation" hidden>Menu <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" class="main-nav" aria-label="Main navigation">
+        <a href="{{ url_for('portfolio_list') }}" {% if request.url.path.startswith(('/portfolios', '/journal')) %}aria-current="page"{% endif %}>Our work</a>
+        <a href="{{ url_for('home') }}#approach">The approach</a>
+        <a href="{{ url_for('contact_page') }}" {% if request.url.path == '/contact' %}aria-current="page"{% endif %}>Contact</a>
+        <a class="button button-small" href="{{ url_for('inquiry_form') }}">Let's make memories <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div><a class="footer-brand" href="{{ url_for('home') }}">{{ business.name }}</a><p>Real people. Unrehearsed moments.<br>Stories worth keeping.</p></div>
+      <nav aria-label="Footer navigation">
+        <a href="{{ url_for('portfolio_list') }}">Explore our work</a>
+        <a href="{{ url_for('booking_form') }}">Book a consultation</a>
+        <a href="{{ url_for('contact_page') }}">Get in touch</a>
+      </nav>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/wed_studiozs/" target="_blank" rel="noopener noreferrer">Find us on Instagram <span aria-hidden="true">↗</span></a>
+        <span>@wed_studiozs</span>
+      </div>
+    </div>
+    <div class="container footer-bottom"><span>&copy; {{ current_year }} WED STUDIOZS</span><a href="/admin">Studio workspace <span aria-hidden="true">↗</span></a></div>
+  </footer>
+  <dialog id="lightbox" class="lightbox" aria-labelledby="lightbox-caption">
+    <div class="lightbox-toolbar"><p id="lightbox-caption"></p><button type="button" data-close-lightbox aria-label="Close photograph">Close <span aria-hidden="true">×</span></button></div>
+    <div id="lightbox-stage"></div>
+    <p class="lightbox-help">Use the arrow keys to browse. Escape to close.</p>
+    <div class="lightbox-controls"><button type="button" data-previous-image aria-label="Previous photograph">← Previous</button><span id="lightbox-count"></span><button type="button" data-next-image aria-label="Next photograph">Next →</button></div>
+  </dialog>
+</body>
+</html>

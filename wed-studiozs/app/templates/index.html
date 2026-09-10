@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "partials/portfolio_card.html" import portfolio_card, journal_card %}
+{% block title %}{{ business.name }} — Stories worth keeping{% endblock %}
+{% block head %}<link rel="preload" as="image" href="{{ journal[0].image_url }}">{% endblock %}
+{% block content %}
+<!-- THESIS: A photographic journal: real studio work instead of stock imagery and invented proof.
+OWN-WORLD: Soft white, deep plum, generous serif headlines, precise sans captions, uncropped contact sheets.
+STORY: Meet the work, explore a story, start a conversation.
+FIRST VIEWPORT: Open headline and enquiry action above three staggered photographs, the centre print leading.
+FORM: Contact-sheet journal, direction 6, seed 7d55b0c3; familiar scrolling and captioned thresholds. -->
+<section class="container hero">
+  <div class="hero-intro">
+    <h1>For the moments<br>that become <em>forever.</em></h1>
+    <div class="hero-note"><p>Wedding &amp; event photography.<br>The glance. The laughter. The little things<br class="desktop-break"> you never want to forget.</p><a class="text-link" href="{{ url_for('portfolio_list') }}">Step into our stories <span aria-hidden="true">↗</span></a></div>
+  </div>
+  <div class="hero-prints">
+    {% for story in [journal[1], journal[0], journal[4]] %}
+    <a class="hero-print print-{{ loop.index }}" href="/journal/{{ story.slug }}">
+      <figure><img src="{{ story.image_url }}" alt="{{ story.alt }}" width="512" height="640" {% if loop.index == 2 %}fetchpriority="high"{% endif %}><figcaption><span>{{ story.title }}</span><span aria-hidden="true">↗</span></figcaption></figure>
+    </a>
+    {% endfor %}
+  </div>
+  <div class="hero-footnote"><span>Photographed by WED STUDIOZS</span><a href="#selected-work">A few stories, below <span aria-hidden="true">↓</span></a></div>
+</section>
+
+<section class="approach-section" id="approach">
+  <div class="container approach-grid">
+    <h2>Not a perfect pose.<br><em>A feeling.</em></h2>
+    <div><p class="large-copy">The best photographs take you back. To the people, the place, and exactly how it felt.</p><p>We photograph the unrehearsed moments — the glance, the laugh, the quiet minute before the vows. Explore our wedding, engagement, and pre-wedding stories, then tell us what you have in mind.</p><a class="text-link" href="{{ url_for('booking_form') }}">Let's talk about your day <span aria-hidden="true">↗</span></a></div>
+  </div>
+</section>
+
+<section class="container section" id="selected-work">
+  <div class="section-heading"><div><h2>A little of our world.</h2><p>Selected stories from <a href="https://www.instagram.com/wed_studiozs/" target="_blank" rel="noopener noreferrer">@wed_studiozs</a>.</p></div><a class="text-link" href="{{ url_for('portfolio_list') }}">View the full journal <span aria-hidden="true">↗</span></a></div>
+  <div class="story-grid">{% for story in [journal[2], journal[3], journal[1]] %}{{ journal_card(story) }}{% endfor %}</div>
+</section>
+
+{% if featured %}
+<section class="container section collections-section">
+  <div class="section-heading"><h2>Inside the collections.</h2><a class="text-link" href="/portfolios#collections">All collections <span aria-hidden="true">↗</span></a></div>
+  <div class="story-grid">{% for item in featured %}{{ portfolio_card(item) }}{% endfor %}</div>
+</section>
+{% endif %}
+
+<section class="container journey-section">
+  <div class="section-heading"><h2>A simple beginning.</h2><p>From a first hello to a story of your own.</p></div>
+  <ol class="journey-list">
+    <li><h3>Tell us your story</h3><p>Share your date, the place, and the moments that matter to you. It is fine if you are still figuring things out.</p></li>
+    <li><h3>Make a little space to talk</h3><p>Request a consultation so we can discuss the coverage and approach that suit your celebration.</p></li>
+    <li><h3>Be present in your day</h3><p>A shared plan means more room for the real moments. The people. The happy chaos. You, being you.</p></li>
+  </ol>
+</section>
+
+<section class="closing-section"><div class="container closing-inner"><div><h2>Your story is next.</h2><p>Tell us a little about the day you are dreaming of.</p></div><a class="button button-light" href="{{ url_for('inquiry_form') }}">Start a conversation <span aria-hidden="true">↗</span></a></div></section>
+{% endblock %}

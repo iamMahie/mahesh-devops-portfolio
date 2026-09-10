@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ business.name }}{% endblock %}
+{% block content %}
+<section class="container"><div class="confirmation"><h1>{{ title }}</h1><p>{{ message }}</p>{% if request_id %}<p class="form-note">Request reference: {{ request_id }}</p>{% endif %}<div class="confirmation-actions"><a class="button" href="/">Back to home ↗</a><a class="text-link" href="/contact">Contact the studio</a></div></div></section>
+{% endblock %}
