@@ -1,4 +1,4 @@
-# mahesh-devops-portfolio
+# Mahesh Devops Portfolio
 
 *** WED STUDIOZS ***
 A photography website and studio workspace, served by one FastAPI application.

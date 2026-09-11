@@ -1,0 +1,41 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoScaler
+metadata:
+  name: wed-studiozs-hpa
+  namespace: wed-studiozs
+spec:
+  scaleTargetRef:    # Reference the Deployment that this HPA will scale
+    apiVersion: apps/v1
+    kind: Deployment
+    name: wed-studiozs-deployment
+  minReplicas: 2 
+  maxReplicas: 5
+  metrics:
+  # Scale based on CPU utilization.
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50  # Target 50% CPU utilization across all deployment pods
+  # Scale based on memory utilization
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75 # Target 75% of memory utilization across all deployment pods
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60     # Wait 60 seconds before scaling up to avoid temporary spikes
+      policies:
+      - type: Pods
+        value: 1                  # Scale up by 1 pod at a time
+        periodSeconds: 60         # Allow scaling up by 1 pod every 60 seconds
+    scaleDown:
+      stabilizationWindowSeconds: 300   # Wait 300 seconds before scaling down
+      policies:
+      - type: Pods
+        value: 1                  # Scale down by 1 pod at a time
+        periodSeconds: 300        # Allow scaling down by 1 pod every 300 seconds

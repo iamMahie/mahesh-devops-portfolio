@@ -2,4 +2,15 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - /base
+  - application/Namespace.yml
+  - application/ConfigMap.yml
+  - application/Deployment.yml
+  - application/Migration-Job.yml
+  - application/API-Gateway.yml
+  - application/HTTPRoute.yml
+  - application/default-deny-all-policy.yml
+  - application/allow-traffic-policy.yml
+  - application/LimitResources.yml
+  - application/HorizontalPodAutoscaler.yml
+  - database/Pg-Service.yml
+  - database/Pg-StatefullSet.yml

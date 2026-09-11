@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+# Block all incoming traffic to pods in this namespace by default
+metadata:
+  name: default-deny-all     
+  namespace: wed-studiozs
+spec:
+  podSelector: {}     # Selects all pods in the namespace
+  policyTypes:
+    - Ingress         # Only effectively block traffic from the Ingress, allowing other traffic
+    - Egress          # Allow all outgoing traffic from the pods in this namespace
+    # No ingress and egress rules are defined, which means all incoming traffic is blocked.

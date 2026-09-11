@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: wed-studiozs-resource-quoota
+  namespace: wed-studiozs
+spec:
+  hard:
+    requests.cpu: "3"          # Total CPU requests across all pods in the namespace
+    requests.memory: "20GI"    # Total memory requests across all pods in the namespace
+    limits.cpu: "5"           # Total CPU limits across all pods in the namespace
+    limits.memory: "30GI"     # Total memory limits across all pods in the namespace
+    pods: "10"                # Maximum number of pods that can be created in the namespace
+    services: "5"             # Maximum number of services that can be created in the namespace
+    persistentvolumeclaims: "4"  # Maximum number of PVC's that can be created
+
+---
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: wed-studiozs-limit-range
+  namespace: wed-studiozs
+spec:
+  limits:
+  - type: Container       # Applies to all containers
+    default:              # Default resource requests and limits for containers
+      cpu: "500m"         
+      memory: "256Mi"
+    defaultRequest:       # Default requests for containers if not specified
+      cpu: "250m"
+      memory: "128Mi"
+    max:                  # Maximum resource allowed for containers
+      cpu: "2"
+      memory: "1Gi"
+    min:                # Minimum resource required for containers
+      cpu: "100m"
+      memory: "64Mi"
+
