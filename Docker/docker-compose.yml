@@ -23,8 +23,8 @@ services:
   # Database migration service using Python's Alembic
   db-migration:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: Docker/Dockerfile
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -42,8 +42,8 @@ services:
   # Web service for the FastAPI application
   web:
     build:  
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: Docker/Dockerfile
     container_name: wed-studiozs-web
     ports:
       - "8000:8000"
