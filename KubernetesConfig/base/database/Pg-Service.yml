@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
-  namespace: application-database
+  name: postgres-service
+  namespace: wed-studiozs
 spec:
   clusterIP: None  # Headless service to allow direct access to the database pods
   selector:

@@ -9,4 +9,4 @@ spec:
   policyTypes:
     - Ingress         # Only effectively block traffic from the Ingress, allowing other traffic
     - Egress          # Allow all outgoing traffic from the pods in this namespace
-    # No ingress and egress rules are defined, which means all incoming traffic is blocked.
+    # Empty/No ingress and egress rules are defined, which means all incoming traffic is blocked.

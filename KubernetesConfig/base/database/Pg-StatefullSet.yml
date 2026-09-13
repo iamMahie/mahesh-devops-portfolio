@@ -37,7 +37,7 @@ spec:
             - name: POSTGRES_USER
               valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_USER } }
             - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: wed-studiozs-secrets, key: POSTGRES_PASSWORD } }
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: POSTGRES_PASSWORD } }
             - name: POSTGRES_DB
               valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_DB } }
             - name: PGDATA
@@ -56,13 +56,15 @@ spec:
               memory: 512Mi
             limits:
               cpu: "2"
-              memory: 2Gi
+              memory: 1Gi
           readinessProbe:
             exec:
               command:
                 - pg_isready
                 - -U
-                - postgres
+                - wedstudiozs
+                - -d
+                - wed-studiozs
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
@@ -70,7 +72,9 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - postgres
+                - wedstudiozs
+                - -d
+                - wed-studiozs
             initialDelaySeconds: 5
             periodSeconds: 10
       # Temporary and empty volumes/ directories for postgresql to write system related files

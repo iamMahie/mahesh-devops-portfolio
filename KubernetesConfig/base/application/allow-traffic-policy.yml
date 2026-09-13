@@ -19,9 +19,9 @@ spec:
             matchLabels:
               # Allow traffic from pods with label traefik
               gateway.networking.k8s.io/gateway-name: application-gateway
-          ports:
-          - protocol: TCP
-            port: 8000   # The port that the service will expose to other services within the cluster
+      ports:
+      - protocol: TCP
+        port: 8000   # The port that the service will expose to other services within the cluster
 
   # Allow application to communicate with cluster DNS to resolve service names
   egress:
@@ -30,17 +30,17 @@ spec:
           podSelector:
             matchLabels:
               k8s-app: kube-dns        # Allow traffic to pods with label k8s-app=kube-dns (the DNS service)
-          ports:
-          - protocol: UDP
-            port: 53     # The port that the DNS service listens on for queries
-          - protocol: TCP
-            port: 53     # The port that the DNS service listens on for queries
+      ports:
+      - protocol: UDP
+        port: 53     # The port that the DNS service listens on for queries
+      - protocol: TCP
+        port: 53     # The port that the DNS service listens on for queries
 
     # Allow application to communicate with the PostgreSQL database service
     - to:
         - namespaceSelector:
             matchLabels:
               name: wed-studiozs        # Allow traffic to the wed-studiozs namespace PostgreSQL service
-          ports:
-          - protocol: TCP
-            port: 5432   # The port that the PostgreSQL service listens on for connections
+      ports:
+      - protocol: TCP
+        port: 5432   # The port that the PostgreSQL service listens on for connections

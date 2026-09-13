@@ -6,9 +6,9 @@ metadata:
 spec:
   hard:
     requests.cpu: "3"          # Total CPU requests across all pods in the namespace
-    requests.memory: "20GI"    # Total memory requests across all pods in the namespace
+    requests.memory: "20Gi"    # Total memory requests across all pods in the namespace
     limits.cpu: "5"           # Total CPU limits across all pods in the namespace
-    limits.memory: "30GI"     # Total memory limits across all pods in the namespace
+    limits.memory: "30Gi"     # Total memory limits across all pods in the namespace
     pods: "10"                # Maximum number of pods that can be created in the namespace
     services: "5"             # Maximum number of services that can be created in the namespace
     persistentvolumeclaims: "4"  # Maximum number of PVC's that can be created

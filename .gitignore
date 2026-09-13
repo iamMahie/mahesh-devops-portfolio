@@ -11,7 +11,7 @@ DEVOPS-ROADMAP.md
 .secrets
 
 # Secrets yaml file
-**/Secrets.yml
+**/Secret.yml
 
 # wheelhouse 
 **/wheelhouse/

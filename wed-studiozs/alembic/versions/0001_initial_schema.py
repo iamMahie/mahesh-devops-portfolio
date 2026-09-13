@@ -10,14 +10,6 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-# Enum definitions matching the ORM models
-from app.models.enums import (
-    BookingStatus,
-    InquiryStatus,
-    PackageInterest,
-    PortfolioCategory,
-)
-
 revision: str = "0001"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
@@ -25,40 +17,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    # Create enums (PostgreSQL specific)
-    portfolio_category_enum = sa.Enum(
-        PortfolioCategory,
-        name="portfolio_category",
-        values_callable=lambda x: [e.value for e in x],
-        native_enum=True,
-    )
-    portfolio_category_enum.create(op.get_bind(), checkfirst=True)
-
-    inquiry_status_enum = sa.Enum(
-        InquiryStatus,
-        name="inquiry_status",
-        values_callable=lambda x: [e.value for e in x],
-        native_enum=True,
-    )
-    inquiry_status_enum.create(op.get_bind(), checkfirst=True)
-
-    booking_status_enum = sa.Enum(
-        BookingStatus,
-        name="booking_status",
-        values_callable=lambda x: [e.value for e in x],
-        native_enum=True,
-    )
-    booking_status_enum.create(op.get_bind(), checkfirst=True)
-
-    package_interest_enum = sa.Enum(
-        PackageInterest,
-        name="package_interest",
-        values_callable=lambda x: [e.value for e in x],
-        native_enum=True,
-    )
-    package_interest_enum.create(op.get_bind(), checkfirst=True)
-
-    # Create tables
+    # Create tables - SQLAlchemy's Enum columns will auto-create the types
     op.create_table(
         "admin_users",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -89,7 +48,7 @@ def upgrade() -> None:
         sa.Column("title", sa.String(length=200), nullable=False),
         sa.Column("slug", sa.String(length=220), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("category", sa.Enum(PortfolioCategory, name="portfolio_category"), nullable=False),
+        sa.Column("category", sa.Enum("weddings", "engagements", "pre_weddings", "maternity", "events", name="portfolio_category"), nullable=False),
         sa.Column("cover_image_url", sa.String(length=500), nullable=True),
         sa.Column("is_featured", sa.Boolean(), nullable=False),
         sa.Column(
@@ -142,9 +101,9 @@ def upgrade() -> None:
         sa.Column("phone", sa.String(length=30), nullable=True),
         sa.Column("event_date", sa.Date(), nullable=True),
         sa.Column("location", sa.String(length=200), nullable=True),
-        sa.Column("package_interest", sa.Enum(PackageInterest, name="package_interest"), nullable=True),
+        sa.Column("package_interest", sa.Enum("essential", "signature", "premium", "custom", name="package_interest"), nullable=True),
         sa.Column("message", sa.Text(), nullable=True),
-        sa.Column("status", sa.Enum(InquiryStatus, name="inquiry_status"), nullable=False),
+        sa.Column("status", sa.Enum("new", "contacted", "quoted", "won", "lost", name="inquiry_status"), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -164,7 +123,7 @@ def upgrade() -> None:
         sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("booking_date", sa.Date(), nullable=False),
         sa.Column("notes", sa.Text(), nullable=True),
-        sa.Column("status", sa.Enum(BookingStatus, name="booking_status"), nullable=False),
+        sa.Column("status", sa.Enum("pending", "confirmed", "completed", "cancelled", name="booking_status"), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -204,7 +163,8 @@ def downgrade() -> None:
     op.drop_table("portfolios")
     op.drop_table("admin_users")
 
-    # Drop enums
-    bind = op.get_bind()
-    for enum_name in ("package_interest", "booking_status", "inquiry_status", "portfolio_category"):
-        op.execute(f"DROP TYPE IF EXISTS {enum_name}")
+    # Drop enums with CASCADE
+    op.execute("DROP TYPE IF EXISTS package_interest CASCADE")
+    op.execute("DROP TYPE IF EXISTS booking_status CASCADE")
+    op.execute("DROP TYPE IF EXISTS inquiry_status CASCADE")
+    op.execute("DROP TYPE IF EXISTS portfolio_category CASCADE")

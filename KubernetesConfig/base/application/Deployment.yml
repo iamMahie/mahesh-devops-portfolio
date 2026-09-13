@@ -59,7 +59,7 @@ spec:
               valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: SECRET_KEY } }
             # must come LAST — expansion only sees vars above it
             - name: DATABASE_URL
-              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: DATABASE_URL } }
           # StartUp Probe to check if the container finished it's initialization
           startupProbe:
             httpGet:
@@ -96,10 +96,10 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "1000m"
-    volumes:
-    - name: tmp
-      emptyDir:
-        sizeLimit: 100Mi        
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100Mi        
 ---
 
 # Service configuration for the fastapi application, exposing the application to other services within the cluster 

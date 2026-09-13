@@ -10,11 +10,23 @@ spec:
   template:
     metadata:
       labels:
-        app: db-migration
+        app: wed-studiozs-app
     spec:
       restartPolicy: Never               # The job will not restart the pod if it fails
+      securityContext:
+        runAsNonRoot : true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile: 
+          type: RuntimeDefault
       containers:
         - name: db-migration
+          securityContext: 
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: 
+              drop: ["ALL"]
           image: docker.io/maheshcherakapu/wed-studiozs-app:v1.0 # Use the same image as the application for consistency
           imagePullPolicy: IfNotPresent # Only pull the image if it is not already present on the node
           command: ["alembic", "upgrade", "head"] # Command to run the database migrations
@@ -27,5 +39,7 @@ spec:
               valueFrom: { configMapKeyRef: { name: wed-studiozs-configmap, key: POSTGRES_HOST } }
             - name: POSTGRES_PASSWORD
               valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: POSTGRES_PASSWORD } }
+            - name: SECRET_KEY
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: SECRET_KEY } }
             - name: DATABASE_URL
-              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):5432/$(POSTGRES_DB)"
+              valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: DATABASE_URL } }
