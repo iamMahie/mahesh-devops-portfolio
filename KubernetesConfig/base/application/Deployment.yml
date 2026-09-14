@@ -5,7 +5,7 @@ metadata:
   namespace: wed-studiozs
 spec:
   # ReplicaSet configuration to define the number of pod replicas for the deployment
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 5    # Keep the last 5 versions for the dpeloyment to allow rollback
   strategy:
     type: RollingUpdate

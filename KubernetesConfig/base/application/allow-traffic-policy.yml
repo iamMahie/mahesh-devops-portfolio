@@ -10,37 +10,57 @@ spec:
   policyTypes:
     - Ingress
     - Egress
-  
-  # Allow incoming traffic from the Traefik gateway to the application pods
+
   ingress:
     - from:
-        - namespaceSelector: {}        # Allow traffic from any namespace since trefik is in a different namespace
+        - namespaceSelector: {}
           podSelector:
             matchLabels:
-              # Allow traffic from pods with label traefik
               gateway.networking.k8s.io/gateway-name: application-gateway
       ports:
-      - protocol: TCP
-        port: 8000   # The port that the service will expose to other services within the cluster
+        - protocol: TCP
+          port: 8000
 
-  # Allow application to communicate with cluster DNS to resolve service names
   egress:
+    # DNS
     - to:
-        - namespaceSelector: {}       # Allow traffic to any namespace since DNS is in a different namespace
+        - namespaceSelector: {}
           podSelector:
             matchLabels:
-              k8s-app: kube-dns        # Allow traffic to pods with label k8s-app=kube-dns (the DNS service)
+              k8s-app: kube-dns
       ports:
-      - protocol: UDP
-        port: 53     # The port that the DNS service listens on for queries
-      - protocol: TCP
-        port: 53     # The port that the DNS service listens on for queries
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
 
-    # Allow application to communicate with the PostgreSQL database service
+    # PostgreSQL
     - to:
-        - namespaceSelector:
+        - podSelector:
             matchLabels:
-              name: wed-studiozs        # Allow traffic to the wed-studiozs namespace PostgreSQL service
+              app: postgres
       ports:
-      - protocol: TCP
-        port: 5432   # The port that the PostgreSQL service listens on for connections
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-traffic
+  namespace: wed-studiozs
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: wed-studiozs-app
+      ports:
+        - protocol: TCP
+          port: 5432
