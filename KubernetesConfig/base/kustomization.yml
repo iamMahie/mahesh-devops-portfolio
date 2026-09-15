@@ -11,6 +11,6 @@ resources:
   - application/default-deny-all-policy.yml
   - application/allow-traffic-policy.yml
   - application/LimitResources.yml
-  - application/HorizontalPodAutoScaler.yml
+  - application/HorizontalPodAutoScalar.yml
   - database/Pg-Service.yml
   - database/Pg-StatefullSet.yml
