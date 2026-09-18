@@ -19,3 +19,6 @@ DEVOPS-ROADMAP.md
 # docs
 PROGRESS.md
 AGENDA.md
+
+.venv/
+.coverage
