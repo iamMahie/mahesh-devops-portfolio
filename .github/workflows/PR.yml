@@ -45,6 +45,7 @@ jobs:
       with:
         python-version: '3.12'
         cache: 'pip'   # Speed up the future runs by caching dependencies
+        cache-dependency-path: wed-studiozs/pyproject.toml
       
     # Install dependencies
     - name: Install dependencies
