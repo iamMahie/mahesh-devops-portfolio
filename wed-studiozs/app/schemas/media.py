@@ -17,7 +17,7 @@ def validate_image_url(value: str | None) -> str | None:
         valid = parsed.scheme in {"http", "https"} and bool(parsed.hostname)
         if parsed.username or parsed.password:
             valid = False
-        parsed.port
+        _ = parsed.port
     except ValueError as exc:
         raise ValueError("Use a valid image URL.") from exc
     if not valid:
