@@ -5,6 +5,9 @@ on:
       - main
     paths-ignore:
       - 'README.md'
+  push:
+    branches:
+      - main
 permissions: {}
 jobs:
   lint-and-test:
