@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
-
-T = TypeVar("T")
 
 
 @dataclass(slots=True, frozen=True)
@@ -29,7 +27,7 @@ class PaginationParams:
         return self.size
 
 
-class Page(BaseModel, Generic[T]):
+class Page[T](BaseModel):
     """Envelope returned by every paginated endpoint."""
 
     items: list[T]
