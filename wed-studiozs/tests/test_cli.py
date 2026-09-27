@@ -21,12 +21,13 @@ from app.db import session as db
 from app.db.seed import _DEMO_PORTFOLIOS, seed_portfolios
 from app.models import AdminUser, GalleryImage, Portfolio
 from app.schemas.auth import AdminCreate
-from tests.test_platform import migrated_engine  # noqa: F401
 
 
 async def test_admin_creation_and_repeat_never_resets_existing_account(migrated_engine):
     factory = async_sessionmaker(migrated_engine, expire_on_commit=False)
-    payload = AdminCreate(email="OPERATOR@example.com", password="Real-password-42", full_name="Operator")
+    payload = AdminCreate(
+        email="OPERATOR@example.com", password="Real-password-42", full_name="Operator"
+    )
     async with factory() as session:
         assert await cli.create_admin_account(session, payload)
         account = await session.scalar(select(AdminUser))
@@ -38,7 +39,10 @@ async def test_admin_creation_and_repeat_never_resets_existing_account(migrated_
         account.is_superuser = False
         await session.commit()
         assert not await cli.create_admin_account(
-            session, AdminCreate(email="operator@example.com", password="Another-password-42", full_name="Changed")
+            session,
+            AdminCreate(
+                email="operator@example.com", password="Another-password-42", full_name="Changed"
+            ),
         )
         await session.refresh(account)
         assert account.hashed_password == old_hash
@@ -55,8 +59,10 @@ async def test_demo_seed_is_repeatable_without_mutating_source_or_creating_admin
         await seed_portfolios(session)
         assert await session.scalar(select(func.count()).select_from(Portfolio)) == len(source)
         assert await session.scalar(select(func.count()).select_from(AdminUser)) == 0
-        assert await session.scalar(select(func.count()).select_from(GalleryImage)) == sum(len(p["images"]) for p in source)
-        assert _DEMO_PORTFOLIOS == source
+        assert await session.scalar(select(func.count()).select_from(GalleryImage)) == sum(
+            len(p["images"]) for p in source
+        )
+        assert source == _DEMO_PORTFOLIOS
         # A second empty database is represented by deleting only this isolated fixture's data.
         from sqlalchemy import delete
 
@@ -64,14 +70,18 @@ async def test_demo_seed_is_repeatable_without_mutating_source_or_creating_admin
         await session.execute(delete(Portfolio))
         await session.commit()
         await seed_portfolios(session)
-        assert _DEMO_PORTFOLIOS == source
+        assert source == _DEMO_PORTFOLIOS
         assert await session.scalar(select(func.count()).select_from(Portfolio)) == len(source)
 
 
 async def test_cli_dispatch_validates_schema_and_disposes(migrated_engine, monkeypatch):
     dispose = AsyncMock()
-    monkeypatch.setattr(db, "engine", SimpleNamespace(connect=migrated_engine.connect, dispose=dispose))
-    monkeypatch.setattr(db, "SessionFactory", async_sessionmaker(migrated_engine, expire_on_commit=False))
+    monkeypatch.setattr(
+        db, "engine", SimpleNamespace(connect=migrated_engine.connect, dispose=dispose)
+    )
+    monkeypatch.setattr(
+        db, "SessionFactory", async_sessionmaker(migrated_engine, expire_on_commit=False)
+    )
     payload = AdminCreate(email="operator@example.com", password="Real-password-42")
     assert await cli._run("create-admin", payload) == "Administrator created."
     assert await cli._run("create-admin", payload) == "Account already exists; no changes made."
@@ -110,7 +120,9 @@ def test_hidden_password_prompt(monkeypatch):
     monkeypatch.setattr("sys.stdin", SimpleNamespace(isatty=lambda: True))
     passwords = iter(["Real-password-42", "Real-password-42"])
     monkeypatch.setattr(cli.getpass, "getpass", lambda prompt: next(passwords))
-    payload = cli._read_admin(cli._parser().parse_args(["create-admin", "--email", "operator@example.com"]))
+    payload = cli._read_admin(
+        cli._parser().parse_args(["create-admin", "--email", "operator@example.com"])
+    )
     assert payload.password == "Real-password-42"
 
 
@@ -132,7 +144,9 @@ def test_bad_email_and_noninteractive_prompt_fail(monkeypatch):
 
 def test_password_argument_is_rejected_without_echo(monkeypatch, capsys):
     with pytest.raises(SystemExit) as error:
-        cli.main(["create-admin", "--email", "operator@example.com", "--password", "never-echo-this"])
+        cli.main(
+            ["create-admin", "--email", "operator@example.com", "--password", "never-echo-this"]
+        )
     assert error.value.code == 2
     assert "never-echo-this" not in capsys.readouterr().err
 
@@ -154,8 +168,13 @@ def test_real_module_refuses_unmigrated_database_without_creating_files():
     }
     result = subprocess.run(
         [
-            sys.executable, "-m", "app.cli", "create-admin",
-            "--email", "operator@example.com", "--password-stdin",
+            sys.executable,
+            "-m",
+            "app.cli",
+            "create-admin",
+            "--email",
+            "operator@example.com",
+            "--password-stdin",
         ],
         input="Do-not-print-this-password-42\n",
         text=True,

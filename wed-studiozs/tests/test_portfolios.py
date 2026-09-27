@@ -62,7 +62,9 @@ async def test_list_is_paginated(client, auth_headers) -> None:
 
 async def test_filter_by_category_and_search(client, auth_headers) -> None:
     await _create_portfolio(client, auth_headers, title="Beach Maternity", category="maternity")
-    await _create_portfolio(client, auth_headers, title="Rooftop Engagement", category="engagements")
+    await _create_portfolio(
+        client, auth_headers, title="Rooftop Engagement", category="engagements"
+    )
 
     by_category = await client.get("/api/v1/portfolios", params={"category": "maternity"})
     assert by_category.json()["total"] == 1

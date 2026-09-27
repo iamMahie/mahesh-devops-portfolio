@@ -26,7 +26,8 @@ class Receipt(BaseModel):
 def redirect_with_receipt(url: str, receipt: Receipt) -> RedirectResponse:
     now = datetime.now(UTC)
     token = jwt.encode(
-        receipt.model_dump() | {
+        receipt.model_dump()
+        | {
             "iss": _ISSUER,
             "iat": now,
             "exp": now + timedelta(minutes=10),
@@ -37,8 +38,13 @@ def redirect_with_receipt(url: str, receipt: Receipt) -> RedirectResponse:
     )
     response = RedirectResponse(url, status_code=303, headers={"Cache-Control": "no-store"})
     response.set_cookie(
-        _COOKIE, token, max_age=600, httponly=True, secure=settings.is_production,
-        samesite="lax", path="/",
+        _COOKIE,
+        token,
+        max_age=600,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        path="/",
     )
     return response
 
@@ -58,8 +64,10 @@ def read_receipt(request: Request, kind: ReceiptKind, reference: int | None = No
             "This confirmation has expired or belongs to another browser. "
             "Your submitted request is still saved; contact the studio if you need help."
         ) from exc
-    if payload["type"] != "receipt" or receipt.kind != kind or (
-        reference is not None and receipt.reference != reference
+    if (
+        payload["type"] != "receipt"
+        or receipt.kind != kind
+        or (reference is not None and receipt.reference != reference)
     ):
         raise NotFoundError("This confirmation is not available in this browser.")
     return receipt

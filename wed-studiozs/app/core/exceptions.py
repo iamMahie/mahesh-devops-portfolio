@@ -63,9 +63,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def _request_validation_handler(
-        _: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    async def _request_validation_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
         # Pydantic puts the original exception inside `ctx`, which json cannot
         # encode -> run it through FastAPI's encoder first.
         return JSONResponse(

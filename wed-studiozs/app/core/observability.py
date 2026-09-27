@@ -20,7 +20,9 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 request_id_context: ContextVar[str | None] = ContextVar("request_id", default=None)
 route_context: ContextVar[str | None] = ContextVar("route", default=None)
 _SAFE_REQUEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}\Z")
-_METHODS = frozenset({"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"})
+_METHODS = frozenset(
+    {"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"}
+)
 
 
 class JsonFormatter(logging.Formatter):
@@ -117,7 +119,9 @@ class ObservabilityMiddleware:
             await self.app(scope, receive, send)
             return
 
-        supplied = [value for key, value in scope.get("headers", []) if key.lower() == b"x-request-id"]
+        supplied = [
+            value for key, value in scope.get("headers", []) if key.lower() == b"x-request-id"
+        ]
         candidate = supplied[0].decode("latin-1") if len(supplied) == 1 else ""
         request_id = candidate if _SAFE_REQUEST_ID.fullmatch(candidate) else uuid.uuid4().hex
         token = request_id_context.set(request_id)
@@ -145,7 +149,12 @@ class ObservabilityMiddleware:
             self.metrics.duration.labels(*labels).observe(duration)
             logging.getLogger("wed_studiozs.request").info(
                 "HTTP request completed",
-                extra={"route": route, "method": method, "status": status, "duration_seconds": duration},
+                extra={
+                    "route": route,
+                    "method": method,
+                    "status": status,
+                    "duration_seconds": duration,
+                },
             )
             route_context.reset(route_token)
             request_id_context.reset(token)

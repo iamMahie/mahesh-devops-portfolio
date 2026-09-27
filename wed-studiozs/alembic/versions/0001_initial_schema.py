@@ -7,8 +7,9 @@ Create Date: 2026-01-01 00:00:00
 
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision: str = "0001"
 down_revision: str | None = None
@@ -48,7 +49,18 @@ def upgrade() -> None:
         sa.Column("title", sa.String(length=200), nullable=False),
         sa.Column("slug", sa.String(length=220), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("category", sa.Enum("weddings", "engagements", "pre_weddings", "maternity", "events", name="portfolio_category"), nullable=False),
+        sa.Column(
+            "category",
+            sa.Enum(
+                "weddings",
+                "engagements",
+                "pre_weddings",
+                "maternity",
+                "events",
+                name="portfolio_category",
+            ),
+            nullable=False,
+        ),
         sa.Column("cover_image_url", sa.String(length=500), nullable=True),
         sa.Column("is_featured", sa.Boolean(), nullable=False),
         sa.Column(
@@ -67,9 +79,7 @@ def upgrade() -> None:
     )
     op.create_index("ix_portfolios_slug", "portfolios", ["slug"], unique=True)
     op.create_index("ix_portfolios_category", "portfolios", ["category"])
-    op.create_index(
-        "ix_portfolios_category_featured", "portfolios", ["category", "is_featured"]
-    )
+    op.create_index("ix_portfolios_category_featured", "portfolios", ["category", "is_featured"])
 
     op.create_table(
         "gallery_images",
@@ -101,9 +111,17 @@ def upgrade() -> None:
         sa.Column("phone", sa.String(length=30), nullable=True),
         sa.Column("event_date", sa.Date(), nullable=True),
         sa.Column("location", sa.String(length=200), nullable=True),
-        sa.Column("package_interest", sa.Enum("essential", "signature", "premium", "custom", name="package_interest"), nullable=True),
+        sa.Column(
+            "package_interest",
+            sa.Enum("essential", "signature", "premium", "custom", name="package_interest"),
+            nullable=True,
+        ),
         sa.Column("message", sa.Text(), nullable=True),
-        sa.Column("status", sa.Enum("new", "contacted", "quoted", "won", "lost", name="inquiry_status"), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum("new", "contacted", "quoted", "won", "lost", name="inquiry_status"),
+            nullable=False,
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -123,7 +141,11 @@ def upgrade() -> None:
         sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("booking_date", sa.Date(), nullable=False),
         sa.Column("notes", sa.Text(), nullable=True),
-        sa.Column("status", sa.Enum("pending", "confirmed", "completed", "cancelled", name="booking_status"), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum("pending", "confirmed", "completed", "cancelled", name="booking_status"),
+            nullable=False,
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),

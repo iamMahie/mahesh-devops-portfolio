@@ -64,7 +64,9 @@ class Settings(BaseSettings):
     def _configure_database_url(self) -> "Settings":
         if self.database_url is None:
             if not self.database_password or not self.database_password.strip():
-                raise ValueError("Set DATABASE_URL or supply DATABASE_PASSWORD and database connection fields.")
+                raise ValueError(
+                    "Set DATABASE_URL or supply DATABASE_PASSWORD and database connection fields."
+                )
             self.database_url = URL.create(
                 "postgresql+asyncpg",
                 username=self.database_user,
@@ -84,7 +86,9 @@ class Settings(BaseSettings):
                 raise ValueError
             self.database_url = url.set(drivername=driver).render_as_string(hide_password=False)
         except (ArgumentError, ValueError, TypeError):
-            raise ValueError("DATABASE_URL must be a valid PostgreSQL or SQLite connection URL.") from None
+            raise ValueError(
+                "DATABASE_URL must be a valid PostgreSQL or SQLite connection URL."
+            ) from None
         return self
 
     @property

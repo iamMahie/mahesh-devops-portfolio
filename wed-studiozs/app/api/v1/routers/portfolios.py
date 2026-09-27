@@ -69,9 +69,7 @@ async def get_portfolio(
     dependencies=[Depends(get_current_admin)],
     summary="Create a portfolio (admin)",
 )
-async def create_portfolio(
-    payload: PortfolioCreate, service: PortfolioServiceDep
-) -> PortfolioRead:
+async def create_portfolio(payload: PortfolioCreate, service: PortfolioServiceDep) -> PortfolioRead:
     return PortfolioRead.model_validate(await service.create_portfolio(payload))
 
 

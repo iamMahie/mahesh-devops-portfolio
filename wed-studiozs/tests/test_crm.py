@@ -56,9 +56,7 @@ async def test_inquiry_search_and_status_filter(client: AsyncClient, auth_header
     )
     assert searched.json()["total"] == 1
 
-    filtered = await client.get(
-        "/api/v1/inquiries", params={"status": "won"}, headers=auth_headers
-    )
+    filtered = await client.get("/api/v1/inquiries", params={"status": "won"}, headers=auth_headers)
     assert filtered.json()["total"] == 0
 
 

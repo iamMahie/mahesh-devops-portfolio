@@ -17,9 +17,7 @@ category_enum = Enum(
 
 class Portfolio(Base, TimestampMixin):
     __tablename__ = "portfolios"
-    __table_args__ = (
-        Index("ix_portfolios_category_featured", "category", "is_featured"),
-    )
+    __table_args__ = (Index("ix_portfolios_category_featured", "category", "is_featured"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -42,9 +40,7 @@ class Portfolio(Base, TimestampMixin):
 
 class GalleryImage(Base):
     __tablename__ = "gallery_images"
-    __table_args__ = (
-        Index("ix_gallery_images_portfolio_order", "portfolio_id", "display_order"),
-    )
+    __table_args__ = (Index("ix_gallery_images_portfolio_order", "portfolio_id", "display_order"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     portfolio_id: Mapped[int] = mapped_column(

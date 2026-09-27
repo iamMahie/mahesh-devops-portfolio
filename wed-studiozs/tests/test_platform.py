@@ -15,7 +15,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-from alembic import command
 from alembic.config import Config
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
@@ -24,6 +23,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from alembic import command
 from app.core.config import Settings
 from app.core.lifecycle import DatabaseNotReady, check_database
 from app.core.observability import JsonFormatter, request_id_context, route_context
@@ -36,7 +36,9 @@ async def migrated_engine():
 
     def migrate(connection):
         config = Config()
-        config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "alembic"))
+        config.set_main_option(
+            "script_location", str(Path(__file__).resolve().parents[1] / "alembic")
+        )
         config.attributes["connection"] = connection
         command.upgrade(config, "head")
 
@@ -121,10 +123,16 @@ async def test_migrated_lifespan_readiness_and_cleanup(migrated_engine):
     app = create_app()
     dispose = AsyncMock(wraps=migrated_engine.dispose)
     app.state.db_engine = SimpleNamespace(connect=migrated_engine.connect, dispose=dispose)
-    async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            assert (await client.get("/healthz")).status_code == 200
-            assert (await client.get("/readyz")).json() == {"status": "ready"}
+    async with (
+        app.router.lifespan_context(app),
+        AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client,
+    ):
+        assert (await client.get("/healthz")).status_code == 200
+        assert (await client.get("/readyz")).json() == {"status": "ready"}
+
     dispose.assert_awaited_once()
     async with migrated_engine.connect() as connection:
         assert await connection.run_sync(lambda conn: inspect(conn).get_table_names()) == []
@@ -170,8 +178,12 @@ async def test_missing_schema_contract_is_unready(migrated_engine, statement):
 async def test_forward_compatible_migration_is_accepted(migrated_engine):
     async with migrated_engine.begin() as connection:
         await connection.execute(text("ALTER TABLE portfolios ADD COLUMN future_caption TEXT"))
-        await connection.execute(text("ALTER TABLE portfolios ADD COLUMN future_flag BOOLEAN NOT NULL DEFAULT false"))
-        await connection.execute(text("UPDATE alembic_version SET version_num = 'future_expand_revision'"))
+        await connection.execute(
+            text("ALTER TABLE portfolios ADD COLUMN future_flag BOOLEAN NOT NULL DEFAULT false")
+        )
+        await connection.execute(
+            text("UPDATE alembic_version SET version_num = 'future_expand_revision'")
+        )
     await check_database(migrated_engine, 3)
 
 
@@ -239,14 +251,19 @@ async def test_request_ids_metrics_and_unhandled_errors(caplog):
             transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://test"
         ) as client:
             first, second = await asyncio.gather(
-                client.get("/platform-items/private-a?token=secret-query", headers={"X-Request-ID": "req-one"}),
+                client.get(
+                    "/platform-items/private-a?token=secret-query",
+                    headers={"X-Request-ID": "req-one"},
+                ),
                 client.get("/platform-items/private-b", headers={"X-Request-ID": "req-two"}),
             )
             assert first.headers["x-request-id"] == first.json()["request_id"] == "req-one"
             assert second.headers["x-request-id"] == second.json()["request_id"] == "req-two"
             invalid = await client.get("/healthz", headers={"X-Request-ID": "bad id\t"})
             assert len(invalid.headers["x-request-id"]) == 32
-            duplicate = await client.get("/healthz", headers=[("X-Request-ID", "one"), ("X-Request-ID", "two")])
+            duplicate = await client.get(
+                "/healthz", headers=[("X-Request-ID", "one"), ("X-Request-ID", "two")]
+            )
             assert duplicate.headers["x-request-id"] not in {"one", "two"}
             failed = await client.get("/platform-boom", headers={"X-Request-ID": "failed-request"})
             assert failed.status_code == 500
@@ -284,8 +301,13 @@ def test_json_formatter_redacts_secrets_access_paths_and_exception_values():
     route_token = route_context.set("/portfolios/{slug}")
     try:
         access = logging.LogRecord(
-            "uvicorn.access", logging.INFO, "", 0, '%s - "%s %s HTTP/%s" %d',
-            ("client", "GET", "/portfolios/private-name?token=secret", "1.1", 200), None,
+            "uvicorn.access",
+            logging.INFO,
+            "",
+            0,
+            '%s - "%s %s HTTP/%s" %d',
+            ("client", "GET", "/portfolios/private-name?token=secret", "1.1", 200),
+            None,
         )
         formatted = json.loads(formatter.format(access))
         assert formatted["request_id"] == "correlation-id"
@@ -296,7 +318,13 @@ def test_json_formatter_redacts_secrets_access_paths_and_exception_values():
             raise RuntimeError("exception-secret")
         except RuntimeError:
             failure = logging.LogRecord(
-                "uvicorn.error", logging.ERROR, "", 0, "Failure configured-secret", (), sys.exc_info()
+                "uvicorn.error",
+                logging.ERROR,
+                "",
+                0,
+                "Failure configured-secret",
+                (),
+                sys.exc_info(),
             )
         output = formatter.format(failure)
         assert "configured-secret" not in output
@@ -335,7 +363,11 @@ logging.getLogger('uvicorn.access').info(
     assert result.returncode == 0, result.stderr
     events = [json.loads(line) for line in result.stdout.splitlines()]
     assert len(events) == 3
-    assert {event["logger"] for event in events} == {"wed_studiozs", "uvicorn.error", "uvicorn.access"}
+    assert {event["logger"] for event in events} == {
+        "wed_studiozs",
+        "uvicorn.error",
+        "uvicorn.access",
+    }
     assert all(event["request_id"] is None for event in events)
     assert "private-token" not in result.stdout
 
@@ -343,7 +375,9 @@ logging.getLogger('uvicorn.access').info(
 def test_alembic_offline_accepts_percent_encoded_database_password(monkeypatch):
     from app.core.config import settings
 
-    monkeypatch.setattr(settings, "database_url", "postgresql+asyncpg://operator:p%40ss%25word@localhost/studio")
+    monkeypatch.setattr(
+        settings, "database_url", "postgresql+asyncpg://operator:p%40ss%25word@localhost/studio"
+    )
     output = io.StringIO()
     config = Config(output_buffer=output)
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "alembic"))

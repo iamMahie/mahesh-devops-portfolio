@@ -67,8 +67,13 @@ async def test_blank_category_and_optional_inquiry_fields(client):
     response = await client.post(
         "/inquiry",
         data={
-            "customer_name": "Ravi Kumar", "email": "ravi@example.com",
-            "event_date": "", "package_interest": "", "phone": "", "location": "", "message": "",
+            "customer_name": "Ravi Kumar",
+            "email": "ravi@example.com",
+            "event_date": "",
+            "package_interest": "",
+            "phone": "",
+            "location": "",
+            "message": "",
         },
         follow_redirects=True,
     )
@@ -94,8 +99,10 @@ async def test_booking_uses_redirect_and_does_not_confirm_appointment(client):
     response = await client.post(
         "/booking",
         data={
-            "customer_name": "Ravi Kumar", "email": "ravi@example.com",
-            "booking_date": (date.today() + timedelta(days=1)).isoformat(), "notes": "",
+            "customer_name": "Ravi Kumar",
+            "email": "ravi@example.com",
+            "booking_date": (date.today() + timedelta(days=1)).isoformat(),
+            "notes": "",
         },
     )
     assert response.status_code == 303
@@ -107,7 +114,8 @@ async def test_booking_uses_redirect_and_does_not_confirm_appointment(client):
 
 async def test_inquiry_receipt_is_private_and_bound_to_reference(client):
     response = await client.post(
-        "/inquiry", data={"customer_name": "Ravi Kumar", "email": "ravi@example.com"},
+        "/inquiry",
+        data={"customer_name": "Ravi Kumar", "email": "ravi@example.com"},
     )
     assert response.status_code == 303
     location = response.headers["location"]
@@ -152,7 +160,8 @@ async def test_instagram_journal_filters_by_search_and_category(client):
 async def test_pagination_preserves_search_category_and_size(client, auth_headers):
     for index in range(3):
         response = await client.post(
-            "/api/v1/portfolios", headers=auth_headers,
+            "/api/v1/portfolios",
+            headers=auth_headers,
             json={"title": f"Searchable Wedding {index}", "category": "weddings"},
         )
         assert response.status_code == 201
@@ -166,8 +175,10 @@ async def test_public_form_input_is_escaped(client):
     response = await client.post(
         "/contact",
         data={
-            "name": '<script>alert("x")</script>', "email": "bad-email",
-            "subject": "Question", "message": "A valid message for the studio.",
+            "name": '<script>alert("x")</script>',
+            "email": "bad-email",
+            "subject": "Question",
+            "message": "A valid message for the studio.",
         },
     )
     assert response.status_code == 422

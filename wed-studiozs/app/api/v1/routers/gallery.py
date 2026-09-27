@@ -72,9 +72,7 @@ async def set_featured_image(
     service: GalleryServiceDep,
     _: CurrentAdmin,
 ) -> GalleryImageRead:
-    return GalleryImageRead.model_validate(
-        await service.set_featured_image(portfolio_id, image_id)
-    )
+    return GalleryImageRead.model_validate(await service.set_featured_image(portfolio_id, image_id))
 
 
 @router.patch(

@@ -34,8 +34,12 @@ def _parser() -> argparse.ArgumentParser:
     )
     admin.add_argument("--email", required=True)
     admin.add_argument("--full-name", default="WED STUDIOZS Admin")
-    admin.add_argument("--password-stdin", action="store_true", help="Read one password line from standard input.")
-    commands.add_parser("seed-demo", help="Seed sample portfolios only, into an empty portfolio collection.")
+    admin.add_argument(
+        "--password-stdin", action="store_true", help="Read one password line from standard input."
+    )
+    commands.add_parser(
+        "seed-demo", help="Seed sample portfolios only, into an empty portfolio collection."
+    )
     return parser
 
 
@@ -44,14 +48,18 @@ def _read_admin(args: argparse.Namespace) -> AdminCreate:
         password = sys.stdin.readline(1025).rstrip("\r\n")
     else:
         if not sys.stdin.isatty():
-            raise CommandError("A terminal is required for hidden input; otherwise use --password-stdin.")
+            raise CommandError(
+                "A terminal is required for hidden input; otherwise use --password-stdin."
+            )
         with warnings.catch_warnings():
             warnings.simplefilter("error", getpass.GetPassWarning)
             try:
                 password = getpass.getpass("Admin password: ")
                 confirmation = getpass.getpass("Confirm password: ")
             except getpass.GetPassWarning:
-                raise CommandError("Hidden password input is unavailable; use --password-stdin.") from None
+                raise CommandError(
+                    "Hidden password input is unavailable; use --password-stdin."
+                ) from None
         if password != confirmation:
             raise CommandError("Passwords do not match.")
     try:
@@ -59,7 +67,11 @@ def _read_admin(args: argparse.Namespace) -> AdminCreate:
             email=args.email, password=password, full_name=args.full_name, is_superuser=True
         )
     except ValidationError:
-        raise CommandError("Invalid administrator details: use a valid email, an 8–72 byte password, and a name up to 150 characters.") from None
+        raise CommandError(
+            "Invalid administrator details: use a valid email, an 8–72 byte password, "
+            "and a name up to 150 characters."
+        ) from None
+
     if not password.strip() or len(password.encode("utf-8")) > 72:
         raise CommandError("Password must be nonblank and at most 72 UTF-8 bytes (bcrypt limit).")
     return admin
@@ -107,7 +119,11 @@ async def _run(command: str, admin: AdminCreate | None) -> str:
         async with SessionFactory() as session:
             if command == "create-admin":
                 created = await create_admin_account(session, admin)
-                return "Administrator created." if created else "Account already exists; no changes made."
+                return (
+                    "Administrator created."
+                    if created
+                    else "Account already exists; no changes made."
+                )
             await seed_portfolios(session)
             return "Demo portfolio seed completed; existing portfolios were left unchanged."
     finally:

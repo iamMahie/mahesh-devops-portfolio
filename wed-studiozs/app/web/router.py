@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Annotated, TypeVar
+from typing import Annotated
 
 from fastapi import APIRouter, Path, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -26,8 +26,6 @@ from app.web.templates import templates
 
 router = APIRouter(include_in_schema=False)
 router.include_router(admin_router)
-FormModel = TypeVar("FormModel", bound=BaseModel)
-
 
 def form_page(
     request: Request,
@@ -39,17 +37,23 @@ def form_page(
     status_code: int = 200,
 ) -> HTMLResponse:
     return templates.TemplateResponse(
-        request, template, {
-            "values": values or {}, "errors": errors or {}, "error": error,
-            "today": date.today().isoformat(), "packages": list(PackageInterest),
+        request,
+        template,
+        {
+            "values": values or {},
+            "errors": errors or {},
+            "error": error,
+            "today": date.today().isoformat(),
+            "packages": list(PackageInterest),
         },
         status_code=status_code,
         headers={"Cache-Control": "no-store"},
     )
 
 
-async def parse_form(
-    request: Request, model: type[FormModel],
+async def parse_form[FormModel: BaseModel](
+    request: Request,
+    model: type[FormModel],
 ) -> tuple[FormModel | None, dict[str, str], dict[str, str]]:
     form = await request.form()
     values = {
@@ -89,12 +93,18 @@ async def portfolio_list(
     try:
         active_category = PortfolioCategory(category) if category else None
     except ValueError as exc:
-        raise NotFoundError("That photography category does not exist. Browse all our stories.") from exc
+        raise NotFoundError(
+            "That photography category does not exist. Browse all our stories."
+        ) from exc
     query = q.strip()
     page = await service.list_portfolios(pagination, category=active_category, search=query or None)
     return templates.TemplateResponse(
-        request, "portfolio_list.html", {
-            "page": page, "active_category": active_category, "query": query,
+        request,
+        "portfolio_list.html",
+        {
+            "page": page,
+            "active_category": active_category,
+            "query": query,
             "journal": filter_stories(active_category, query),
         },
     )
@@ -102,7 +112,9 @@ async def portfolio_list(
 
 @router.get("/portfolios/{slug}", response_class=HTMLResponse, name="portfolio_detail")
 async def portfolio_detail(
-    request: Request, service: PortfolioServiceDep, slug: Annotated[str, Path(min_length=1)],
+    request: Request,
+    service: PortfolioServiceDep,
+    slug: Annotated[str, Path(min_length=1)],
 ) -> HTMLResponse:
     portfolio = await service.get_by_slug(slug)
     return templates.TemplateResponse(request, "portfolio_detail.html", {"portfolio": portfolio})
@@ -112,9 +124,12 @@ async def portfolio_detail(
 async def journal_detail(request: Request, slug: str) -> HTMLResponse:
     story = find_story(slug)
     if story is None:
-        raise NotFoundError("We could not find that story. There is more to explore in the journal.")
+        raise NotFoundError(
+            "We could not find that story. There is more to explore in the journal."
+        )
     return templates.TemplateResponse(
-        request, "journal_detail.html",
+        request,
+        "journal_detail.html",
         {"story": story, "related": [item for item in STORIES if item != story][:3]},
     )
 
@@ -125,7 +140,9 @@ async def inquiry_form(request: Request) -> HTMLResponse:
 
 
 @router.post("/inquiry", response_class=HTMLResponse, response_model=None, name="inquiry_submit")
-async def inquiry_submit(request: Request, service: InquiryServiceDep) -> HTMLResponse | RedirectResponse:
+async def inquiry_submit(
+    request: Request, service: InquiryServiceDep
+) -> HTMLResponse | RedirectResponse:
     payload, values, errors = await parse_form(request, InquiryCreate)
     if payload is None:
         return form_page(request, "inquiry.html", values=values, errors=errors, status_code=422)
@@ -143,12 +160,16 @@ async def inquiry_submit(request: Request, service: InquiryServiceDep) -> HTMLRe
 
 @router.get("/inquiry/{inquiry_id}/thanks", response_class=HTMLResponse, name="inquiry_thanks")
 async def inquiry_thanks(
-    request: Request, inquiry_id: Annotated[int, Path(gt=0)],
+    request: Request,
+    inquiry_id: Annotated[int, Path(gt=0)],
 ) -> HTMLResponse:
     receipt = read_receipt(request, "inquiry", inquiry_id)
     return templates.TemplateResponse(
-        request, "inquiry_thanks.html", {
-            "receipt": receipt, "heading": "Your enquiry is with the studio.",
+        request,
+        "inquiry_thanks.html",
+        {
+            "receipt": receipt,
+            "heading": "Your enquiry is with the studio.",
             "message": "We have saved the details of your day. The studio will follow up using "
             "the contact details you shared. You do not need to submit the form again.",
         },
@@ -162,7 +183,9 @@ async def booking_form(request: Request) -> HTMLResponse:
 
 
 @router.post("/booking", response_class=HTMLResponse, response_model=None, name="booking_submit")
-async def booking_submit(request: Request, service: BookingServiceDep) -> HTMLResponse | RedirectResponse:
+async def booking_submit(
+    request: Request, service: BookingServiceDep
+) -> HTMLResponse | RedirectResponse:
     payload, values, errors = await parse_form(request, BookingCreate)
     if payload is None:
         return form_page(request, "booking.html", values=values, errors=errors, status_code=422)
@@ -173,8 +196,11 @@ async def booking_submit(request: Request, service: BookingServiceDep) -> HTMLRe
             request, "booking.html", values=values, error=exc.message, status_code=exc.status_code
         )
     return redirect_with_receipt(
-        "/booking/thanks", Receipt(
-            kind="booking", reference=booking.id, name=payload.customer_name,
+        "/booking/thanks",
+        Receipt(
+            kind="booking",
+            reference=booking.id,
+            name=payload.customer_name,
             date=payload.booking_date.isoformat(),
         ),
     )
@@ -184,8 +210,11 @@ async def booking_submit(request: Request, service: BookingServiceDep) -> HTMLRe
 async def booking_thanks(request: Request) -> HTMLResponse:
     receipt = read_receipt(request, "booking")
     return templates.TemplateResponse(
-        request, "inquiry_thanks.html", {
-            "receipt": receipt, "heading": "Your consultation request is saved.",
+        request,
+        "inquiry_thanks.html",
+        {
+            "receipt": receipt,
+            "heading": "Your consultation request is saved.",
             "message": "This is a request, not a confirmed appointment. "
             "The studio will follow up to find a time that works.",
         },
@@ -199,7 +228,9 @@ async def contact_page(request: Request) -> HTMLResponse:
 
 
 @router.post("/contact", response_class=HTMLResponse, response_model=None, name="contact_submit")
-async def contact_submit(request: Request, service: ContactServiceDep) -> HTMLResponse | RedirectResponse:
+async def contact_submit(
+    request: Request, service: ContactServiceDep
+) -> HTMLResponse | RedirectResponse:
     payload, values, errors = await parse_form(request, ContactMessageCreate)
     if payload is None:
         return form_page(request, "contact.html", values=values, errors=errors, status_code=422)
@@ -219,8 +250,11 @@ async def contact_submit(request: Request, service: ContactServiceDep) -> HTMLRe
 async def contact_thanks(request: Request) -> HTMLResponse:
     receipt = read_receipt(request, "contact")
     return templates.TemplateResponse(
-        request, "inquiry_thanks.html", {
-            "receipt": receipt, "heading": "Message sent.",
+        request,
+        "inquiry_thanks.html",
+        {
+            "receipt": receipt,
+            "heading": "Message sent.",
             "message": "Your message is saved with the studio. We will reply using "
             "the email address you shared. There is no need to send it again.",
         },

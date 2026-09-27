@@ -85,10 +85,15 @@ def browser_csrf(token: str, *, purpose: str = "session") -> str:
 
 
 def validate_browser_csrf(
-    token: str, submitted: str | None, *, purpose: str = "session",
+    token: str,
+    submitted: str | None,
+    *,
+    purpose: str = "session",
 ) -> None:
     if (
-        not token or not submitted or len(submitted) != 64
+        not token
+        or not submitted
+        or len(submitted) != 64
         or any(character not in "0123456789abcdef" for character in submitted)
         or not hmac.compare_digest(browser_csrf(token, purpose=purpose), submitted)
     ):

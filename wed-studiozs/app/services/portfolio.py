@@ -131,7 +131,8 @@ class GalleryService:
     async def add_image(self, payload: GalleryImageCreate) -> GalleryImage:
         await self._ensure_portfolio(payload.portfolio_id)
         order = (
-            payload.display_order if "display_order" in payload.model_fields_set
+            payload.display_order
+            if "display_order" in payload.model_fields_set
             else await self.repo.next_display_order(payload.portfolio_id)
         )
         image = await self.repo.create(

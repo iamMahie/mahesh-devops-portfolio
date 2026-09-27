@@ -36,9 +36,7 @@ async def submit_message(
     return ContactMessageRead.model_validate(await service.submit(payload))
 
 
-@router.get(
-    "/messages", response_model=Page[ContactMessageRead], summary="List messages (admin)"
-)
+@router.get("/messages", response_model=Page[ContactMessageRead], summary="List messages (admin)")
 async def list_messages(
     service: ContactServiceDep,
     pagination: PaginationDep,

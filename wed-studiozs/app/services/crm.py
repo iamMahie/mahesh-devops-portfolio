@@ -47,9 +47,7 @@ class InquiryService:
         self.repo = InquiryRepository(session)
 
     async def submit(self, payload: InquiryCreate) -> Inquiry:
-        inquiry = await self.repo.create(
-            **payload.model_dump(), status=InquiryStatus.NEW
-        )
+        inquiry = await self.repo.create(**payload.model_dump(), status=InquiryStatus.NEW)
         await self.session.commit()
         await self.session.refresh(inquiry)
         return inquiry
@@ -109,9 +107,7 @@ class BookingService:
 
     async def request(self, payload: BookingCreate) -> Booking:
         if await self.repo.slot_taken(payload.booking_date, payload.email):
-            raise ConflictError(
-                "You already have an active consultation request for that date."
-            )
+            raise ConflictError("You already have an active consultation request for that date.")
         booking = await self.repo.create(**payload.model_dump(), status=BookingStatus.PENDING)
         await self.session.commit()
         await self.session.refresh(booking)
