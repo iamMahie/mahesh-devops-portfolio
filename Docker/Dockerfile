@@ -11,9 +11,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Mount the requirements.txt file and wheelhouse binaries to the build stage and install dependencies
 # Mount cache for pip to speed up the build process for subsequent builds 
 RUN --mount=type=bind,source=wed-studiozs/requirements.txt,target=/requirements.txt \
-    --mount=type=bind,source=wed-studiozs/wheelhouse,target=/wh \
     --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-index --find-links=/wh -r /requirements.txt
+    pip install -r /requirements.txt
 
 # Stage the exact runtime subtree here; these layers are discarded with the build
 # stage, so the runtime image pays for only one COPY.
