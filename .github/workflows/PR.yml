@@ -57,7 +57,7 @@ jobs:
     # checkout ruff and run the linter
     - name: Lint with ruff
       run: ruff check .
-      continue-on-error: false # Fail the job if ruff finds any issues
+      # continue-on-error: false # Fail the job if ruff finds any issues
       
     - name: Run tests with pytest
     # Run pytest with coverage reporting
