@@ -131,6 +131,8 @@
     menu.setAttribute("aria-expanded", String(expanded));
   });
 
+  if (section === "content") return;
+
   function confirmDelete(description) {
     const dialog = document.getElementById("delete-dialog");
     document.getElementById("delete-description").textContent = description;

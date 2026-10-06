@@ -73,7 +73,8 @@ async def test_gallery_honours_explicit_zero_order(client, auth_headers):
     )
     assert created.status_code == 201
     portfolio_id = created.json()["id"]
-    assert created.json()["images"][1]["display_order"] == 0
+    orders = {image["image_url"]: image["display_order"] for image in created.json()["images"]}
+    assert orders["/static/img/DbLMpWDHwcu.jpg"] == 0
     added = await client.post(
         f"/api/v1/portfolios/{portfolio_id}/images",
         headers=auth_headers,

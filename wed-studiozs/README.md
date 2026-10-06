@@ -1,9 +1,16 @@
-# WED STUDIOZS
+# WedStudiozs
 
 A photography website and studio workspace, served by one FastAPI application.
 Jinja templates, local CSS, and plain JavaScript keep the frontend in the same
 deployable artifact. There is no Node build, separate frontend service, or
 Bootstrap CDN dependency.
+
+The public site uses a responsive CSS 3D photograph gallery, pointer-driven
+depth, hover enlargement, and a locally available clean sans-serif font stack.
+Reduced-motion preferences disable automatic motion and hover video playback.
+See **[guide.md](guide.md)** for content editing, admin access, image quality,
+video hosting, footer/contact changes, and the distinction between curated
+journal content and database-managed collections.
 
 ## What the application does
 
@@ -15,6 +22,8 @@ Bootstrap CDN dependency.
 | Enquire about an event | Manage consultation requests |
 | Request a consultation | Read and manage contact messages |
 | Contact the studio | Sign in and sign out of the protected workspace |
+| Watch films with muted hover playback or touch/keyboard controls | Publish, order, unpublish and delete reels |
+| Find the studio's current contact details | Update footer text, phone, email, address and Instagram handle |
 
 Customer forms work without JavaScript. Invalid submissions retain the entered
 values and show field-specific errors. Successful submissions redirect to a
@@ -43,6 +52,13 @@ Use permanent HTTPS image URLs or bundled `/static/` image paths when publishing
 collections. Upload storage is not implemented. Expiring Instagram CDN URLs are
 not suitable for published collections.
 
+Films accept direct HTTPS MP4/WebM URLs or bundled `/static/` paths, with a
+required poster and optional English WebVTT captions. Until films are published,
+the public section links to Instagram. Real video footage has not been supplied;
+no synthetic demonstration clips are included in the application. Reel and
+contact settings are managed at `/admin/content` using authenticated,
+CSRF-protected HTML forms that also work without JavaScript.
+
 ## Run locally
 
 Run these commands from `wed-studiozs`, in an activated Python 3.12+ virtual
@@ -51,11 +67,11 @@ environment. Use a development database, not a production database.
 1. Install application and development dependencies:
 
    ```text
-   python -m pip install -r requirements-dev.txt
+   python -m pip install -r requirements.txt
    ```
 
-   The production dependency list is `requirements.txt`. The virtual environment
-   and dependency installation do not need to be included in the source tree.
+   The current list includes development/test dependencies. The virtual
+   environment does not need to be included in the source tree.
 
 2. Set configuration using environment variables or a local `.env` based on
    `.env.example`. Supply a database URL and a random `SECRET_KEY` of at least
@@ -67,6 +83,10 @@ environment. Use a development database, not a production database.
    ```text
    alembic upgrade head
    ```
+
+   This release requires `0002`, which adds `reels` and `site_content`.
+   It does not seed films, overwrite existing collections, or run automatically
+   at application startup.
 
 4. Create your administrator explicitly:
 
@@ -109,10 +129,16 @@ Startup does not create tables or seed users. A reachable database without a
 compatible schema is not a ready application. Additional database tables and
 columns are allowed so compatible expand/contract releases can coexist.
 
-The default application pool allows 5 persistent connections plus 10 overflow
+The default application pool allows 5 persistent connections plus 0 overflow
 connections **per worker process**. Budget for workers, replicas, surge pods,
 terminating pods, migrations, and operator connections. Set pool values through
 configuration; adding workers also multiplies the pool budget.
+
+Saved website content is shared through the database, not pod-local files.
+Media URLs are references to separately hosted files; adding a bundled static
+file still requires an image rebuild. Back up database content and media
+separately. The application does not provision object storage or manage CDN
+caching.
 
 Runtime dependencies changed. The current offline Docker build requires a
 wheelhouse supplied by the platform owner: refresh that artifact for the new

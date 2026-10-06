@@ -6,8 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Query, status
 
-from app.api.deps import ContactServiceDep, CurrentAdmin, PaginationDep
-from app.core.config import settings
+from app.api.deps import ContactServiceDep, ContentServiceDep, CurrentAdmin, PaginationDep
 from app.core.pagination import Page
 from app.schemas.crm import ContactMessageCreate, ContactMessageRead
 
@@ -15,12 +14,13 @@ router = APIRouter(prefix="/contact", tags=["contact"])
 
 
 @router.get("/info", summary="Public business contact details")
-async def contact_info() -> dict[str, str]:
+async def contact_info(service: ContentServiceDep) -> dict[str, str]:
+    business = await service.business()
     return {
-        "business_name": settings.app_name,
-        "phone": settings.business_phone,
-        "email": settings.business_email,
-        "address": settings.business_address,
+        "business_name": business["name"],
+        "phone": business["phone"],
+        "email": business["email"],
+        "address": business["address"],
     }
 
 

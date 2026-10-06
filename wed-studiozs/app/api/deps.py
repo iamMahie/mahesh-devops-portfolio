@@ -16,6 +16,7 @@ from app.core.pagination import PaginationParams
 from app.db.session import get_session
 from app.models.admin import AdminUser
 from app.services.auth import AuthService
+from app.services.content import ContentService
 from app.services.crm import BookingService, ContactService, InquiryService
 from app.services.portfolio import GalleryService, PortfolioService
 
@@ -67,6 +68,13 @@ InquiryServiceDep = Annotated[InquiryService, Depends(get_inquiry_service)]
 BookingServiceDep = Annotated[BookingService, Depends(get_booking_service)]
 ContactServiceDep = Annotated[ContactService, Depends(get_contact_service)]
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
+
+
+def get_content_service(session: SessionDep) -> ContentService:
+    return ContentService(session)
+
+
+ContentServiceDep = Annotated[ContentService, Depends(get_content_service)]
 
 
 # ---------------------------------------------------------------- current user

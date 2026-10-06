@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% macro field(name, label, values, target, type='text', limit=1000, required=false, help='') %}
+<div class="admin-field">
+  <label for="{{ target }}-{{ name }}">{{ label }}</label>
+  <input id="{{ target }}-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values[name] }}" maxlength="{{ limit }}" {% if required %}required{% endif %} {% if type == 'number' %}min="0" max="100000"{% endif %} {% if errors.get(name) and area == target %}aria-invalid="true" aria-describedby="{{ target }}-{{ name }}-error"{% endif %}>
+  {% if help %}<small>{{ help }}</small>{% endif %}
+  {% if errors.get(name) and area == target %}<span class="admin-error" id="{{ target }}-{{ name }}-error">{{ errors[name] }}</span>{% endif %}
+</div>
+{% endmacro %}
+{% block workspace %}
+<header class="admin-heading"><div><h1>Website content</h1><p class="admin-intro">Publish a film. Update your details. Changes appear on the website as soon as you save.</p></div><a class="admin-button admin-secondary" href="/films" target="_blank" rel="noopener">View films</a></header>
+{% if saved %}<p class="admin-notice admin-success" role="status">Your change is saved.</p>{% endif %}
+{% if errors %}<div class="admin-notice admin-error" role="alert"><p>Check the highlighted fields. Nothing has been saved.</p><ul>{% for name, message in errors.items() %}<li><a href="#{{ area }}-{{ name }}">{{ name.replace('_', ' ')|title }}: {{ message }}</a></li>{% endfor %}</ul></div>{% endif %}
+<section class="content-settings" aria-labelledby="details-title">
+  <h2 id="details-title">Footer &amp; contact details</h2>
+  <p class="admin-help">These values are shared by the footer, contact page and contact-info API. Leave a contact field blank to hide it. Saved values take priority over environment defaults.</p>
+  <form method="post" action="/admin/content/details" class="admin-form">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {{ field('footer_text', 'Footer description', details, 'details', limit=300, required=true) }}
+    <div class="admin-field-pair">
+      {{ field('phone', 'Phone (optional)', details, 'details', type='tel', limit=30) }}
+      {{ field('email', 'Email (optional)', details, 'details', type='email', limit=254) }}
+    </div>
+    {{ field('address', 'Studio address (optional)', details, 'details', limit=300) }}
+    {{ field('instagram_handle', 'Instagram handle', details, 'details', limit=30, required=true, help='Without @. Existing journal credits always keep their original source.') }}
+    <div><button class="admin-button" type="submit">Save studio details</button></div>
+  </form>
+</section>
+<section class="content-films" id="films" aria-labelledby="films-title">
+  <div class="admin-section-heading"><h2 id="films-title">{{ 'Edit film' if edit else 'Add a film' }}</h2>{% if edit %}<a href="/admin/content#films">Cancel editing</a>{% endif %}</div>
+  <p class="admin-help">Link to your own MP4/WebM file and a sharp poster image. Files are hosted separately, not uploaded here. Add WebVTT captions for any spoken audio. Use a permanent URL, not an Instagram page or expiring download link.</p>
+  <form class="admin-form" method="post" action="/admin/content/reels{{ '?edit=' ~ edit if edit else '' }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {{ field('title', 'Film title', reel, 'reel', limit=150, required=true) }}
+    {{ field('video_url', 'Video URL', reel, 'reel', required=true, help='HTTPS .mp4 / .webm or /static/media/your-film.mp4. MP4 (H.264/AAC) has the widest support.') }}
+    {{ field('poster_url', 'Poster image URL', reel, 'reel', required=true) }}
+    {{ field('captions_url', 'English captions URL (optional)', reel, 'reel', help='A .vtt file. External captions require CORS permission from your media host.') }}
+    <div class="admin-field">
+      <label for="reel-description">Film description / transcript (optional)</label>
+      <textarea id="reel-description" name="description" maxlength="2000" {% if errors.get('description') %}aria-invalid="true" aria-describedby="reel-description-error"{% endif %}>{{ reel.description }}</textarea>
+      {% if errors.get('description') %}<span id="reel-description-error" class="admin-error">{{ errors.description }}</span>{% endif %}
+    </div>
+    {{ field('display_order', 'Display order', reel, 'reel', type='number', required=true, help='Lower numbers appear first. Equal numbers keep creation order.') }}
+    <label class="admin-checkbox"><input type="checkbox" name="is_published" {% if reel.is_published %}checked{% endif %}> Publish on the website</label>
+    <div><button type="submit" class="admin-button">Save film</button></div>
+  </form>
+</section>
+<section class="content-films" aria-labelledby="film-list-title">
+  <h2 id="film-list-title">Your films</h2>
+  {% for item in reel_page.items %}
+  <article class="content-film-row">
+    <img src="{{ item.poster_url }}" alt="" width="90" height="120" loading="lazy">
+    <div><h3>{{ item.title }}</h3><p class="admin-help">{{ 'Published' if item.is_published else 'Draft' }} · Order {{ item.display_order }}</p><a href="/admin/content?edit={{ item.id }}#films">Edit film</a>
+      <details class="content-delete"><summary>Remove film</summary>
+        <form method="post" action="/admin/content/reels/{{ item.id }}/delete">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <label class="admin-checkbox"><input type="checkbox" name="confirm" value="yes" required> Delete “{{ item.title }}” from this website</label>
+          <p class="admin-help">This removes the entry, not the hosted video file.</p><button class="admin-button admin-danger" type="submit">Delete film</button>
+        </form>
+      </details>
+    </div>
+  </article>
+  {% else %}<p class="admin-empty">No films yet. Add a video URL above when your footage is ready. The public page links to Instagram until then.</p>{% endfor %}
+  {% if reel_page.pages > 1 %}<nav class="admin-pagination" aria-label="Film pages">{% if reel_page.page > 1 %}<a href="?page={{ reel_page.page - 1 }}&amp;size={{ reel_page.size }}#film-list-title">Previous</a>{% endif %}<span>Page {{ reel_page.page }} of {{ reel_page.pages }}</span>{% if reel_page.page < reel_page.pages %}<a href="?page={{ reel_page.page + 1 }}&amp;size={{ reel_page.size }}#film-list-title">Next</a>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}

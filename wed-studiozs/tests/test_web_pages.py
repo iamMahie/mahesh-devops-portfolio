@@ -17,7 +17,7 @@ async def test_health(client: AsyncClient) -> None:
 async def test_home_page_renders(client: AsyncClient) -> None:
     response = await client.get("/")
     assert response.status_code == 200
-    assert "WED STUDIOZS" in response.text
+    assert "WedStudiozs" in response.text
 
 
 async def test_portfolio_list_page_renders(client: AsyncClient) -> None:
