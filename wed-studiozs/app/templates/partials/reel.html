@@ -1,0 +1,20 @@
+{% macro reel_card(reel) %}
+<article class="reel-card" data-reel aria-labelledby="film-{{ reel.id }}-title">
+  <div class="reel-screen">
+    <video id="film-{{ reel.id }}" src="{{ reel.video_url }}" poster="{{ reel.poster_url }}" preload="none" muted loop playsinline controls {% if reel.captions_url %}crossorigin="anonymous"{% endif %} aria-label="{{ reel.title }}">
+      {% if reel.captions_url %}<track kind="captions" src="{{ reel.captions_url }}" srclang="en" label="English">{% endif %}
+      Your browser cannot play this video. <a href="{{ reel.video_url }}">Open the film</a>.
+    </video>
+    <span class="reel-indicator" aria-hidden="true">Film</span>
+  </div>
+  <div class="reel-controls" hidden>
+    <button type="button" data-play aria-controls="film-{{ reel.id }}" aria-label="Play {{ reel.title }}">Play</button>
+    <button type="button" data-sound aria-controls="film-{{ reel.id }}" aria-label="Unmute {{ reel.title }}" aria-pressed="false">Unmute</button>
+    {% if reel.captions_url %}<button type="button" data-captions aria-controls="film-{{ reel.id }}" aria-pressed="false">Captions</button>{% endif %}
+  </div>
+  <h3 id="film-{{ reel.id }}-title">{{ reel.title }}</h3>
+  {% if reel.description %}<details class="reel-description"><summary>About this film</summary><p>{{ reel.description }}</p></details>{% endif %}
+  <p class="reel-status" aria-live="polite"></p>
+  <a class="reel-direct" href="{{ reel.video_url }}" target="_blank" rel="noopener noreferrer">Open film <span aria-hidden="true">↗</span></a>
+</article>
+{% endmacro %}

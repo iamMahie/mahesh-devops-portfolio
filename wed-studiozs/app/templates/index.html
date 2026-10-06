@@ -1,55 +1,63 @@
 {% extends "base.html" %}
 {% from "partials/portfolio_card.html" import portfolio_card, journal_card %}
-{% block title %}{{ business.name }} — Stories worth keeping{% endblock %}
-{% block head %}<link rel="preload" as="image" href="{{ journal[0].image_url }}">{% endblock %}
+{% from "partials/reel.html" import reel_card %}
+{% block title %}WedStudiozs — Photography. Film. Feeling.{% endblock %}
+{% block head %}<link rel="preload" as="image" href="{{ journal[4].image_url }}">{% endblock %}
 {% block content %}
-<!-- THESIS: A photographic journal: real studio work instead of stock imagery and invented proof.
-OWN-WORLD: Soft white, deep plum, generous serif headlines, precise sans captions, uncropped contact sheets.
-STORY: Meet the work, explore a story, start a conversation.
-FIRST VIEWPORT: Open headline and enquiry action above three staggered photographs, the centre print leading.
-FORM: Contact-sheet journal, direction 6, seed 7d55b0c3; familiar scrolling and captioned thresholds. -->
-<section class="container hero">
+<!-- THESIS: Walk into the photographs; depth responds to you without hiding the work.
+OWN-WORLD: Soft white, plum ink, clean sans type, floating full-frame photographic prints.
+STORY: Explore the photographs, watch a film, tell the studio about your day.
+FIRST VIEWPORT: A centred headline and two actions above a perspective gallery; one
+portrait leads, smaller prints lean into it. Controls remain outside the photographs.
+FORM: Brief-pinned immersive photo gallery. CSS 3D, no canvas, no scroll hijacking. -->
+<section class="container hero" aria-labelledby="hero-title">
   <div class="hero-intro">
-    <h1>For the moments<br>that become <em>forever.</em></h1>
-    <div class="hero-note"><p>Wedding &amp; event photography.<br>The glance. The laughter. The little things<br class="desktop-break"> you never want to forget.</p><a class="text-link" href="{{ url_for('portfolio_list') }}">Step into our stories <span aria-hidden="true">↗</span></a></div>
+    <h1 id="hero-title">Life, as you <em>felt it.</em></h1>
+    <p>Wedding photography &amp; films.<br>For your people. Your moments. Your kind of forever.</p>
+    <div class="hero-actions"><a class="button" href="/portfolios">Explore the photographs <span aria-hidden="true">↗</span></a><a class="text-link" href="#motion">Meet the films <span aria-hidden="true">↓</span></a></div>
   </div>
-  <div class="hero-prints">
-    {% for story in [journal[1], journal[0], journal[4]] %}
-    <a class="hero-print print-{{ loop.index }}" href="/journal/{{ story.slug }}">
-      <figure><img src="{{ story.image_url }}" alt="{{ story.alt }}" width="512" height="640" {% if loop.index == 2 %}fetchpriority="high"{% endif %}><figcaption><span>{{ story.title }}</span><span aria-hidden="true">↗</span></figcaption></figure>
-    </a>
-    {% endfor %}
+  <div class="hero-scene" data-depth-scene>
+    <div class="hero-prints">
+      {% for story in [journal[0], journal[4], journal[2]] %}
+      <a class="hero-print print-{{ loop.index }}" href="/journal/{{ story.slug }}">
+        <figure><div class="print-surface"><img src="{{ story.image_url }}" alt="{{ story.alt }}" width="512" height="640" {% if loop.index == 2 %}fetchpriority="high"{% endif %} decoding="async"></div><figcaption><span>{{ story.title }}</span><span aria-hidden="true">↗</span></figcaption></figure>
+      </a>
+      {% endfor %}
+    </div>
   </div>
-  <div class="hero-footnote"><span>Photographed by WED STUDIOZS</span><a href="#selected-work">A few stories, below <span aria-hidden="true">↓</span></a></div>
+  <div class="hero-footnote"><span>Through the WedStudiozs lens</span><button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false" hidden>Pause motion</button><a href="#selected-work">Scroll to discover <span aria-hidden="true">↓</span></a></div>
 </section>
 
-<section class="approach-section" id="approach">
-  <div class="container approach-grid">
-    <h2>Not a perfect pose.<br><em>A feeling.</em></h2>
-    <div><p class="large-copy">The best photographs take you back. To the people, the place, and exactly how it felt.</p><p>We photograph the unrehearsed moments — the glance, the laugh, the quiet minute before the vows. Explore our wedding, engagement, and pre-wedding stories, then tell us what you have in mind.</p><a class="text-link" href="{{ url_for('booking_form') }}">Let's talk about your day <span aria-hidden="true">↗</span></a></div>
-  </div>
+<section class="container section selected-section" id="selected-work">
+  <div class="section-heading"><div><h2>Close to the heart.<br>Clear in the frame.</h2><p>Real celebrations, photographed by the studio.</p></div><a class="text-link" href="/portfolios">All photographs <span aria-hidden="true">↗</span></a></div>
+  <div class="story-grid selected-grid">{% for story in [journal[2], journal[3], journal[1]] %}{{ journal_card(story) }}{% endfor %}</div>
 </section>
 
-<section class="container section" id="selected-work">
-  <div class="section-heading"><div><h2>A little of our world.</h2><p>Selected stories from <a href="https://www.instagram.com/wed_studiozs/" target="_blank" rel="noopener noreferrer">@wed_studiozs</a>.</p></div><a class="text-link" href="{{ url_for('portfolio_list') }}">View the full journal <span aria-hidden="true">↗</span></a></div>
-  <div class="story-grid">{% for story in [journal[2], journal[3], journal[1]] %}{{ journal_card(story) }}{% endfor %}</div>
+<section class="film-section" id="motion" aria-labelledby="film-heading">
+  <div class="container">
+    <div class="section-heading"><div><h2 id="film-heading">And then,<br>the moment moves.</h2><p>A different way to remember the day.</p></div><a class="text-link" href="/films">Explore the films <span aria-hidden="true">↗</span></a></div>
+    {% if reels %}
+    <p class="reel-hint">Hover to watch, move away to pause. On touch screens, tap Play. Sound is off until you turn it on.</p>
+    <div class="reel-grid">{% for reel in reels %}{{ reel_card(reel) }}{% endfor %}</div>
+    {% else %}
+    <div class="film-invitation"><img src="{{ journal[4].image_url }}" alt="{{ journal[4].alt }}" loading="lazy" width="512" height="640"><div><h3>More than a still frame.</h3><p>Our films live on Instagram for now. Find the studio there for the moments in motion.</p><a class="button button-light" href="https://www.instagram.com/{{ business.instagram_handle }}/reels/" target="_blank" rel="noopener noreferrer">Watch on Instagram <span aria-hidden="true">↗</span></a></div></div>
+    {% endif %}
+  </div>
 </section>
 
 {% if featured %}
 <section class="container section collections-section">
-  <div class="section-heading"><h2>Inside the collections.</h2><a class="text-link" href="/portfolios#collections">All collections <span aria-hidden="true">↗</span></a></div>
+  <div class="section-heading"><h2>Every day, its own story.</h2><a class="text-link" href="/portfolios#collections">Studio collections <span aria-hidden="true">↗</span></a></div>
   <div class="story-grid">{% for item in featured %}{{ portfolio_card(item) }}{% endfor %}</div>
 </section>
 {% endif %}
 
-<section class="container journey-section">
-  <div class="section-heading"><h2>A simple beginning.</h2><p>From a first hello to a story of your own.</p></div>
-  <ol class="journey-list">
-    <li><h3>Tell us your story</h3><p>Share your date, the place, and the moments that matter to you. It is fine if you are still figuring things out.</p></li>
-    <li><h3>Make a little space to talk</h3><p>Request a consultation so we can discuss the coverage and approach that suit your celebration.</p></li>
-    <li><h3>Be present in your day</h3><p>A shared plan means more room for the real moments. The people. The happy chaos. You, being you.</p></li>
-  </ol>
+<section class="approach-section" id="approach">
+  <div class="container approach-grid">
+    <div class="approach-photo"><img src="{{ journal[0].image_url }}" alt="{{ journal[0].alt }}" loading="lazy" width="512" height="640"></div>
+    <div><h2>Less posing.<br>More being there.</h2><p class="large-copy">The best photographs take you back. To the people, the place, and exactly how it felt.</p><p>We look for the unrehearsed moments: the glance, the laugh, the quiet minute before the vows. Tell us what matters to you. That is where your story starts.</p><a class="text-link" href="/booking">A little space to talk <span aria-hidden="true">↗</span></a></div>
+  </div>
 </section>
 
-<section class="closing-section"><div class="container closing-inner"><div><h2>Your story is next.</h2><p>Tell us a little about the day you are dreaming of.</p></div><a class="button button-light" href="{{ url_for('inquiry_form') }}">Start a conversation <span aria-hidden="true">↗</span></a></div></section>
+<section class="closing-section"><div class="container closing-inner"><div><h2>Let's make room<br>for <em>your story.</em></h2><p>A date, a place, or just an idea. We would love to hear it.</p></div><a class="button" href="/inquiry">Tell us about your day <span aria-hidden="true">↗</span></a></div></section>
 {% endblock %}

@@ -7,22 +7,21 @@ from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
 
-from app.core.config import settings
+from fastapi import Request
 from app.models.enums import PortfolioCategory
+from app.services.content import default_business
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+def public_context(request: Request) -> dict[str, dict[str, str]]:
+    return {"business": getattr(request.state, "business", default_business())}
+
+
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR), context_processors=[public_context])
 
 # Values available to every template without passing them per-view.
 templates.env.globals.update(
-    business={
-        "name": settings.app_name,
-        "phone": settings.business_phone,
-        "email": settings.business_email,
-        "address": settings.business_address,
-    },
     categories=list(PortfolioCategory),
     current_year=date.today().year,
 )

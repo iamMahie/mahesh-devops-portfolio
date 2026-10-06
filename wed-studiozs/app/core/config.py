@@ -18,7 +18,7 @@ class Settings(BaseSettings):
         hide_input_in_errors=True,
     )
 
-    app_name: str = "WED STUDIOZS"
+    app_name: str = "WedStudiozs"
     environment: Literal["development", "testing", "production"] = "development"
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
@@ -40,9 +40,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = Field(default=60, ge=1, le=1440)
 
-    business_phone: str = "+91 98765 43210"
-    business_email: str = "hello@wedstudiozs.com"
-    business_address: str = "2nd Floor, Jubilee Hills, Hyderabad, India"
+    business_phone: str = "+91 91604 00802"
+    business_email: str = ""
+    business_address: str = ""
 
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:8000"])
     default_page_size: int = 12

@@ -1,4 +1,4 @@
-# WED STUDIOZS
+# WedStudiozs
 
 <!-- impeccable:product-schema 1 -->
 
@@ -8,9 +8,11 @@ web
 
 ## Users and purpose
 
-Visitors explore photography portfolios, enquire about an event, request a
+Visitors explore photography portfolios and films, enquire about an event, request a
 consultation, or contact the studio. Studio administrators publish portfolios
-and manage enquiries, consultation requests, and messages.
+and manage enquiries, consultation requests, and messages. The Website content
+workspace manages reel links, publication status, ordering, footer description,
+contact details and the studio's Instagram handle.
 
 ## Operating context
 
@@ -41,9 +43,20 @@ Do not invent these claims.
 
 ## Brand commitments
 
-Preserve the WED STUDIOZS name and photography focus. The user chose the
-photography-journal direction: large real photographs, soft-white backgrounds,
-deep plum accents, and an uncluttered admin workspace.
+Use the user-requested **WedStudiozs** spelling and photography focus. The
+October redesign replaces the serif journal presentation with clean sans
+typography, layered CSS 3D photographs and responsive hover feedback. Keep
+soft-white backgrounds, deep plum accents and an uncluttered admin workspace.
+Show whole photographs without decorative cropping. Motion must not obstruct
+reading, forms or playback controls.
+
+The user chose to add video URLs later through admin. No actual video footage
+has been supplied. Do not invent studio films or imply the Instagram feed is
+embedded or synchronized. Direct MP4/WebM URLs support muted hover playback,
+pause on exit, explicit sound controls and manual touch/keyboard play.
+Reduced-motion users get manual playback. Media upload/storage remains outside
+the application; admin stores links. Curated journal stories remain application
+content and are documented separately from admin-managed collections.
 
 ## Principles
 

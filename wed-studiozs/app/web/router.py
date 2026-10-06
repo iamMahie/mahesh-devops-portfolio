@@ -5,13 +5,14 @@ from __future__ import annotations
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Path, Query, Request
+from fastapi import APIRouter, Depends, Path, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, ValidationError
 
 from app.api.deps import (
     BookingServiceDep,
     ContactServiceDep,
+    ContentServiceDep,
     InquiryServiceDep,
     PaginationDep,
     PortfolioServiceDep,
@@ -20,12 +21,21 @@ from app.core.exceptions import AppError, NotFoundError
 from app.models.enums import PackageInterest, PortfolioCategory
 from app.schemas.crm import BookingCreate, ContactMessageCreate, InquiryCreate
 from app.web.admin import router as admin_router
+from app.web.content_admin import router as content_admin_router
+from app.core.pagination import PaginationParams
 from app.web.journal import STORIES, filter_stories, find_story
 from app.web.receipts import Receipt, read_receipt, redirect_with_receipt
 from app.web.templates import templates
 
-router = APIRouter(include_in_schema=False)
+async def load_business(request: Request, service: ContentServiceDep) -> None:
+    request.state.business = await service.business()
+
+
+router = APIRouter(include_in_schema=False, dependencies=[Depends(load_business)])
 router.include_router(admin_router)
+router.include_router(content_admin_router)
+FormModel = TypeVar("FormModel", bound=BaseModel)
+
 
 def form_page(
     request: Request,
@@ -75,10 +85,20 @@ async def parse_form[FormModel: BaseModel](
 
 
 @router.get("/", response_class=HTMLResponse, name="home")
-async def home(request: Request, service: PortfolioServiceDep) -> HTMLResponse:
+async def home(request: Request, service: PortfolioServiceDep, content: ContentServiceDep) -> HTMLResponse:
     featured = await service.list_featured(limit=3)
     return templates.TemplateResponse(
-        request, "index.html", {"featured": featured, "journal": STORIES}
+        request, "index.html", {
+            "featured": featured, "journal": STORIES,
+            "reels": (await content.list_reels(PaginationParams(size=3), public=True)).items,
+        }
+    )
+
+
+@router.get("/films", response_class=HTMLResponse, name="films")
+async def films(request: Request, service: ContentServiceDep, pagination: PaginationDep) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request, "films.html", {"page": await service.list_reels(pagination, public=True)},
     )
 
 

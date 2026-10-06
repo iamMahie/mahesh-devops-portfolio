@@ -35,6 +35,7 @@ SECTIONS = {
     ),
     "messages": ("Messages", "Read and organise messages sent through the contact form."),
     "portfolios": ("Portfolios", "Publish real collections and manage their gallery photographs."),
+    "content": ("Website content", "Manage films, footer copy and the studio's contact details."),
 }
 
 

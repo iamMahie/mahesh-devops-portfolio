@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "partials/reel.html" import reel_card %}
+{% block title %}Films — WedStudiozs{% endblock %}
+{% block content %}
+<section class="container section films-page">
+  <div class="page-heading"><h1>Relive a little<br>of <em>everything.</em></h1><p>Wedding films from the studio. Hover to watch, leave to pause. On mobile, tap Play. Turn the sound on when you are ready.</p></div>
+  {% if page.items %}
+  <div class="reel-grid">{% for reel in page.items %}{{ reel_card(reel) }}{% endfor %}</div>
+  {% if page.pages > 1 %}<nav class="pagination" aria-label="Film pages">{% if page.page > 1 %}<a class="text-link" href="?page={{ page.page - 1 }}&amp;size={{ page.size }}">Previous</a>{% endif %}<span>Page {{ page.page }} of {{ page.pages }}</span>{% if page.page < page.pages %}<a class="text-link" href="?page={{ page.page + 1 }}&amp;size={{ page.size }}">Next</a>{% endif %}</nav>{% endif %}
+  {% else %}
+  <div class="films-empty"><h2>Find us in motion.</h2><p>{% if page.total %}There are no films on this page. <a href="/films">Return to the first page.</a>{% else %}Our films live on Instagram for now. Browse the studio's reels while we bring the collection here.{% endif %}</p><a class="button" href="https://www.instagram.com/{{ business.instagram_handle }}/reels/" target="_blank" rel="noopener noreferrer">Watch on Instagram <span aria-hidden="true">↗</span></a></div>
+  {% endif %}
+</section>
+{% endblock %}

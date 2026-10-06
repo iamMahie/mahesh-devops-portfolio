@@ -10,6 +10,7 @@ from app.models.enums import (
     PortfolioCategory,
 )
 from app.models.portfolio import GalleryImage, Portfolio
+from app.models.content import Reel, SiteContent
 
 __all__ = [
     "AdminUser",
@@ -23,4 +24,6 @@ __all__ = [
     "PackageInterest",
     "Portfolio",
     "PortfolioCategory",
+    "Reel",
+    "SiteContent",
 ]
