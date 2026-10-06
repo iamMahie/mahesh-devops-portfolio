@@ -2,7 +2,7 @@
 # Stage 1: Build stage
 #-----------------------------------------------------------------------------------
 # Define the base image
-FROM python:3.12-slim@sha256:2c941e860699f878900b0edc2403613c234d4b32eda3cc9fa7036991a2a63c4a AS base
+FROM python:3.12-slim-bookworm@sha256:34386ef0cb081344d7ec1c103ba398e6e9f64e9ab3a1509accc92a4e24a07258 AS base
 
 # Set isolated environment for the application
 RUN python -m venv /opt/venv
@@ -23,7 +23,7 @@ COPY wed-studiozs/alembic.ini /stage/alembic.ini
 # Stage 2: Runtime stage
 # -----------------------------------------------------------------------------------
 # Define the base image for the runtime stage
-FROM python:3.12-slim@sha256:2c941e860699f878900b0edc2403613c234d4b32eda3cc9fa7036991a2a63c4a AS runtime
+FROM python:3.12-slim-bookworm@sha256:34386ef0cb081344d7ec1c103ba398e6e9f64e9ab3a1509accc92a4e24a07258 AS runtime
 
 # Set the working directory
 WORKDIR /myapp
