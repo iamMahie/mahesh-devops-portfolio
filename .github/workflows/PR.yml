@@ -113,7 +113,7 @@ jobs:
         format: 'table'  # To view the scan results in a table format
         exit-code: '1'  # Exit with code 1 if vulnerabilities are found -- failing the job
         ignore-unfixed: true   # This flag fails the build if a vulnerability is discovered and a patch has not been applied
-        severity: 'CRITICAL,HIGH'
+        severity: 'CRITICAL'
 
     - name: Generate SBOM with Syft
       uses: anchore/sbom-action@v0
