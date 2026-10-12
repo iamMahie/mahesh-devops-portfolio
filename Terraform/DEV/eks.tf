@@ -41,6 +41,7 @@ module "eks" {
     }
   }
 
+  /*
   # Allow traffc from the load balancer security group on the actual backend port
   node_security_group_additional_rules = {
     from_load_balancer = {
@@ -52,8 +53,9 @@ module "eks" {
       source_security_group_id = aws_security_group.lb.id
     }
   }
+  */
 
-  tags = {
-    cluster = "wed-studiozs-application"
-  }
+  tags = var.common_tags
 }
+
+

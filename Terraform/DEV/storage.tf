@@ -17,9 +17,5 @@ module "s3_bucket" {
   # Require encrypted connections
   attach_deny_insecure_transport_policy = true
 
-  tags = {
-    Project     = "${var.project}"
-    Environment = "Dev"
-    Purpose     = "TerraformState"
-  }
+  tags = var.common_tags
 }
