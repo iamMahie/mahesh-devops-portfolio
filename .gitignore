@@ -22,3 +22,8 @@ AGENDA.md
 
 .venv/
 .coverage
+
+# Terraform
+**/.terraform/
+**/terraform.tfstate
+**/.terraform.lock.hcl
