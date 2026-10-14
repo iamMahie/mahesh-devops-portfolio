@@ -8,7 +8,7 @@ permissions: {}
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER: wed-studiozs-cluster
-  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects/wed-studiozs
+  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects
   K8S_NAMESPACE: wed-studiozs
   K8S_DEPLOYMENT: wed-studiozs-deployment
   K8S_CONTAINER: wed-studiozs-app
