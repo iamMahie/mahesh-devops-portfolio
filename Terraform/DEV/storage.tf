@@ -1,7 +1,7 @@
 module "s3_bucket" {
-  source  = "terraform-aws-modules/s3-bucket/aws"
+  source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket = "$(var.project)-storage"
+  bucket = "${var.project}-storage"
 
   # Recover previous state versions
   versioning = {

@@ -60,9 +60,9 @@ resource "aws_eip" "nat_eip" {
 
 
 # Nat gateway
-resource "aws_nat_gatewat" "nat_gateway" {
+resource "aws_nat_gateway" "nat_gateway" {
     allocation_id = aws_eip.nat_eip.id
-    subnet_id = aws_subnet.private_subnet[0].id
+    subnet_id = aws_subnet.public_subnet[0].id
 
     tags = merge(
         var.tags, { Name = "${var.project}-nat-gateway" }
@@ -75,12 +75,12 @@ resource "aws_route_table" "private_rt" {
     vpc_id = aws_vpc.main.id
     route {
         cidr_block = "0.0.0.0/0"
-        gateway_id = aws_nat_gatewat.nat_gateway.id
+        gateway_id = aws_nat_gateway.nat_gateway.id
     }
 
-    tags = merge{
+    tags = merge(
         var.tags, { Name = "${var.project}-private-rt" }
-    }
+    )
 }
 
 # Route table association for private subnet

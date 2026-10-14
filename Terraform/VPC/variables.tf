@@ -9,7 +9,7 @@ variable "project" {
     default = "wed-studiozs"
 }
 
-variable "vpc_cidr {
+variable "vpc_cidr" {
     type = string
 }
 

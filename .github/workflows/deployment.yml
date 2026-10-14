@@ -5,6 +5,14 @@ on:
   #     - main
   workflow_dispatch:
 permissions: {}
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER: wed-studiozs-cluster
+  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects/wed-studiozs
+  K8S_NAMESPACE: wed-studiozs
+  K8S_DEPLOYMENT: wed-studiozs-deployment
+  K8S_CONTAINER: wed-studiozs-app
+
 jobs:
   push-to-ecr:
     name: Push Docker Image to ECR
@@ -14,14 +22,8 @@ jobs:
       packages: write
       id-token: write      # Required for AWS OIDC Token
     steps:
-    # Setup docker builds -> Build and push the dokcer image into GitHub Container RegistryS
-
-    # - name: Login to GitHub Container Registry
-    #   uses: docker/login-action@v4
-    #   with:
-    #     registry: ghcr.io
-    #     username: ${{ github.actor }}
-    #     password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     # Login to AWS Elastic Container Registry with OIDC (Open ID Connect)
     - name: Configure AWS and ECR
@@ -114,7 +116,31 @@ jobs:
           enable_ecr_login: true
           ecr_registry: public.ecr.aws/v3k4k2v5/devops_projects
 
-      - name: Deploy to Staging environment EKS
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region "$AWS_REGION" \
+            --name "$EKS_CLUSTER"
+
+      - name: Update staging Deployment
+        run: |
+          kubectl set image \
+            deployment/"$K8S_DEPLOYMENT" \
+            "$K8S_CONTAINER"="$ECR_IMAGE:$GITHUB_SHA" \
+            --namespace "$K8S_NAMESPACE"
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status \
+            deployment/"$K8S_DEPLOYMENT" \
+            --namespace "$K8S_NAMESPACE" \
+            --timeout=180s
+
+      - name: Show deployed Pods
+        run: |
+          kubectl get pods \
+            --namespace "$K8S_NAMESPACE" \
+            -o wide
         
 
 

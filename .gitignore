@@ -27,3 +27,5 @@ AGENDA.md
 **/.terraform/
 **/terraform.tfstate
 **/.terraform.lock.hcl
+**/terraform.tfstate.backup
+**/terraform.tfvars

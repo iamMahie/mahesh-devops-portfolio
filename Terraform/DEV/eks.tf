@@ -6,17 +6,15 @@ module "eks" {
   kubernetes_version = "1.33"
 
   addons = {
-    coredns                = {}
+    coredns = {}
     eks-pod-identity-agent = {
       before_compute = true
     }
-    kube-proxy             = {}
-    vpc-cni                = {
+    kube-proxy = {}
+    vpc-cni = {
       before_compute = true
     }
-    node-monitoring-agent = {
-      before_compute = true
-    }
+    eks-node-monitoring-agent = {}
 
   }
 
@@ -26,18 +24,25 @@ module "eks" {
   # Adds the current caller identity as an administrator via cluster access entry
   enable_cluster_creator_admin_permissions = true
 
-  vpc_id                   = module.vpc.vpc_id
-  subnet_ids               = module.vpc.private_subnet_ids
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnet_ids
 
   # EKS Managed Node Group(s)
   eks_managed_node_groups = {
     worker_nodes = {
-      ami_type               = "AL2_x86_64"
-      instance_types         = ["t3.medium"]
-
+      ami_type       = "AL2023_x86_64_STANDARD"
+      instance_types = ["t3.small"]
       min_size     = 2
       max_size     = 6
       desired_size = 2
+
+      launch_template_version = "$Latest"   # ← Always tracks latest
+
+      metadata_options = {
+        http_endpoint               = "enabled"
+        http_tokens                 = "required"
+        http_put_response_hop_limit = 2   # Change from 1 to 2
+      }
     }
   }
 
@@ -55,7 +60,9 @@ module "eks" {
   }
   */
 
-  tags = var.common_tags
+  tags = {
+    cluster = "wed-studiozs-application"
+  }
 }
 
 
