@@ -61,6 +61,10 @@ jobs:
     name: Smoke Test
     runs-on: ubuntu-latest
     needs: push-to-ecr
+    permissions: 
+      contents: read
+      packages: write
+      id-token: write      # Required for AWS OIDC Token
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -80,7 +84,7 @@ jobs:
         id: login-ecr-public
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+          role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR Public
@@ -101,11 +105,20 @@ jobs:
             -p 8000:8000 \
             $ECR_IMAGE:${{ github.sha }}
 
+      - name: Wait for app readiness
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://127.0.0.1:8000/readyz; then
+              echo "ready"; break
+            fi
+            sleep 1
+          done
+
       # Running py test scripts
       - name: Run Pytest Smoke Gate
         run: |
           pip install pytest requests
-          pytest wed-studiozs/tests/conftest.py -v
+          pytest wed-studiozs/tests -v
 
       - name: Tear Down Container
         if: always()
@@ -125,7 +138,7 @@ jobs:
         id: login-to-ecr
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+          role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR Public
