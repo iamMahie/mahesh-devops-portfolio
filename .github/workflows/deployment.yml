@@ -113,15 +113,23 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Configure AWS and ECR
+      - name: Configure AWS credentials (OIDC)
         id: login-to-ecr
-        uses: iammahie/aws-oidc-action@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws_region: ${{ env.AWS_REGION }}
-          role_to_assume: ${{ secrets.AWS_OIDC_ROLE }}
-          enable_ecr_login: true
-          ecr_registry: public.ecr.aws/v3k4k2v5/devops_projects
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
 
+      - name: Login to Amazon ECR Public
+        run: |
+          # ensure aws cli v2 is available; ubuntu-latest usually has it, but install if missing
+          if ! command -v aws >/dev/null 2>&1; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip && \
+            unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install
+          fi
+          aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
+            | docker login --username AWS --password-stdin public.ecr.aws
+      
       - name: Configure kubectl
         run: |
           aws eks update-kubeconfig \
