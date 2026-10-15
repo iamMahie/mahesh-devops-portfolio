@@ -4,13 +4,11 @@ on:
   #   branches:
   #     - main
   workflow_dispatch:
-permissions:
-    contents: read
-    id-token: write      # Required for AWS OIDC Token
+permissions: {}
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER: wed-studiozs-cluster
-  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects
+  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects/wed-studiozs
   K8S_NAMESPACE: wed-studiozs
   K8S_DEPLOYMENT: wed-studiozs-deployment
   K8S_CONTAINER: wed-studiozs-app
@@ -140,8 +138,7 @@ jobs:
           kubectl rollout status \
             deployment/"$K8S_DEPLOYMENT" \
             --namespace "$K8S_NAMESPACE" \
-            --timeout=5m
-          || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
+            --timeout=180s
 
       - name: Show deployed Pods
         run: |
