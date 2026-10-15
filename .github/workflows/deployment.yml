@@ -89,6 +89,7 @@ jobs:
           docker run -d \
             --name smoke-tests \
             -p 8000:8000 \
+            -e SECRET_KEY=${{ secrets.SMOKE_TEST_SECRET }} \
             $ECR_IMAGE:${{ github.sha }}
 
       - name: Wait for app readiness
