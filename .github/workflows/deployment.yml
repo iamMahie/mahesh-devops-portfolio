@@ -1,10 +1,12 @@
-name: Continous Deployment
+name: Continuous Deployment
 on:
   # push:
   #   branches:
   #     - main
   workflow_dispatch:
-permissions: {}
+permissions:
+    contents: read
+    id-token: write      # Required for AWS OIDC Token
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER: wed-studiozs-cluster
@@ -17,30 +19,16 @@ jobs:
   push-to-ecr:
     name: Push Docker Image to ECR
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write      # Required for AWS OIDC Token
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
     # Login to AWS Elastic Container Registry with OIDC (Open ID Connect)
     - name: Configure AWS credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: ./.github/actions/configure-aws
       with:
         role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
-        aws-region: us-east-1
-
-    - name: Login to Amazon ECR Public
-      run: |
-        # ensure aws cli v2 is available, ubuntu-latest usually has it, but install if missing
-        if ! command -v aws >/dev/null 2>&1; then
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip && \
-          unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install
-        fi
-        aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
-          | docker login --username AWS --password-stdin public.ecr.aws
+        aws-region: us-east-1 # ecr public login control plane is in us east 1 region
 
     - name: Setup up Docker Buildx
       uses: docker/setup-buildx-action@v4
@@ -61,10 +49,6 @@ jobs:
     name: Smoke Test
     runs-on: ubuntu-latest
     needs: push-to-ecr
-    permissions: 
-      contents: read
-      packages: write
-      id-token: write      # Required for AWS OIDC Token
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,28 +61,19 @@ jobs:
       
       - name: Install Testing Utilities
         run: |
-          pip install -r requirements.txt
+          pip install -r wed-studiozs/requirements.txt
+          pip install pytest requests
 
       # Login to AWS Elastic Container Registry with OIDC (Open ID Connect)
       - name: Configure AWS credentials (OIDC)
         id: login-ecr-public
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: ./.github/actions/configure-aws
         with:
           role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR Public
-        run: |
-          # ensure aws cli v2 is available; ubuntu-latest usually has it, but install if missing
-          if ! command -v aws >/dev/null 2>&1; then
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip && \
-            unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install
-          fi
-          aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
-            | docker login --username AWS --password-stdin public.ecr.aws
-
       # Docker compose up automatically pulls and runs the image from ECR
-      - name: Spin Up Smoke Test Contianer
+      - name: Spin Up Smoke Test Container
         run: |
           docker run -d \
             --name smoke-tests \
@@ -107,17 +82,20 @@ jobs:
 
       - name: Wait for app readiness
         run: |
-          for i in {1..30}; do
+          for i in {1..60}; do
             if curl -sSf http://127.0.0.1:8000/readyz; then
               echo "ready"; break
             fi
             sleep 1
           done
+          if ! curl -sSf http://127.0.0.1:8000/readyz; then
+            docker logs smoke-tests || true
+            exit 1
+          fi
 
       # Running py test scripts
       - name: Run Pytest Smoke Gate
         run: |
-          pip install pytest requests
           pytest wed-studiozs/tests -v
 
       - name: Tear Down Container
@@ -130,26 +108,19 @@ jobs:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: smoke-test
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - name: Configure AWS credentials (OIDC)
         id: login-to-ecr
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: ./.github/actions/configure-aws
         with:
           role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR Public
+      - name: Install kubectl
         run: |
-          # ensure aws cli v2 is available; ubuntu-latest usually has it, but install if missing
-          if ! command -v aws >/dev/null 2>&1; then
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip && \
-            unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install
-          fi
-          aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
-            | docker login --username AWS --password-stdin public.ecr.aws
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
       
       - name: Configure kubectl
         run: |
@@ -169,7 +140,8 @@ jobs:
           kubectl rollout status \
             deployment/"$K8S_DEPLOYMENT" \
             --namespace "$K8S_NAMESPACE" \
-            --timeout=180s
+            --timeout=5m
+          || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
 
       - name: Show deployed Pods
         run: |
