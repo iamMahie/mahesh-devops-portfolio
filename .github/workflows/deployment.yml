@@ -4,7 +4,10 @@ on:
   #   branches:
   #     - main
   workflow_dispatch:
-permissions: {}
+permissions:
+  contents: read
+  packages: write
+  id-token: write      # Required for AWS OIDC Token
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER: wed-studiozs-cluster
