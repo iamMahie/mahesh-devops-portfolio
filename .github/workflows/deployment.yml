@@ -5,8 +5,9 @@ on:
   #     - main
   workflow_dispatch:
 permissions:
-    contents: read
-    id-token: write      # Required for AWS OIDC Token
+  contents: read
+  packages: write
+  id-token: write      # Required for AWS OIDC Token
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER: wed-studiozs-cluster
@@ -29,6 +30,11 @@ jobs:
       with:
         role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
         aws-region: us-east-1 # ecr public login control plane is in us east 1 region
+
+    - name: Login to Amazon ECR Public
+      run: |
+        aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
+          | docker login --username AWS --password-stdin public.ecr.aws
 
     - name: Setup up Docker Buildx
       uses: docker/setup-buildx-action@v4
@@ -72,6 +78,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
+      - name: Login to Amazon ECR Public
+        run: |
+          aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
+            | docker login --username AWS --password-stdin public.ecr.aws
+
       # Docker compose up automatically pulls and runs the image from ECR
       - name: Start services with docker compose
         run: |
@@ -113,6 +124,11 @@ jobs:
           role-to-assume: ${{ secrets.AWS_EKS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
+      - name: Login to Amazon ECR Public
+        run: |
+          aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
+            | docker login --username AWS --password-stdin public.ecr.aws
+
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -137,6 +153,8 @@ jobs:
           kubectl rollout status \
             deployment/"$K8S_DEPLOYMENT" \
             --namespace "$K8S_NAMESPACE" \
+            --timeout=5m
+          || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
             --timeout=5m
           || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
 
