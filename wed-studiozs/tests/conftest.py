@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncGenerator
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config
 
 # Configure the environment BEFORE importing anything that reads settings.
 os.environ.update(
@@ -33,6 +37,27 @@ from app.models import AdminUser  # noqa: E402
 # `.local` / `.test` are reserved domains that email-validator rejects.
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "Admin@12345"
+
+
+@pytest.fixture
+async def migrated_engine():
+    """A migrated in-memory SQLite engine for CLI/database tests."""
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:", poolclass=StaticPool)
+
+    def migrate(connection):
+        config = Config()
+        config.set_main_option(
+            "script_location", str(Path(__file__).resolve().parents[1] / "alembic")
+        )
+        config.attributes["connection"] = connection
+        command.upgrade(config, "head")
+
+    try:
+        async with engine.begin() as connection:
+            await connection.run_sync(migrate)
+        yield engine
+    finally:
+        await engine.dispose()
 
 
 @pytest.fixture
