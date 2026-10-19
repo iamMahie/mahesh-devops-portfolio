@@ -152,6 +152,10 @@ jobs:
           aws ecr-public get-login-password --region ${{ env.AWS_REGION }} \
             | docker login --username AWS --password-stdin public.ecr.aws
 
+      - name: Verify Identity via AWS STS
+        run: |
+          aws sts get-caller-identity
+
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
