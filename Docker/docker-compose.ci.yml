@@ -17,7 +17,7 @@ services:
       - wed-studiozs
       - wed-studiozs-pgdb
     depends_on:
-      - database
+      - db-migration
 
 networks:
   wed-studiozs:
