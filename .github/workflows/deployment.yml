@@ -88,6 +88,10 @@ jobs:
         run: |
           docker compose -f Docker/docker-compose.yml -f Docker/docker-compose.ci.yml up -d
 
+      - name: Fetch the logs of database service
+        run: |
+          docker compose -f Docker/docker-compose.yml -f Docker/docker-compose.ci.yml logs database --no-color --tail=200
+
       - name: Wait for app readiness
         run: |
           for i in {1..60}; do
