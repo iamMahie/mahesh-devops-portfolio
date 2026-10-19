@@ -4,11 +4,13 @@ on:
   #   branches:
   #     - main
   workflow_dispatch:
-permissions: {}
+permissions:
+    contents: read
+    id-token: write      # Required for AWS OIDC Token
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER: wed-studiozs-cluster
-  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects/wed-studiozs
+  ECR_IMAGE: public.ecr.aws/v3k4k2v5/devops_projects
   K8S_NAMESPACE: wed-studiozs
   K8S_DEPLOYMENT: wed-studiozs-deployment
   K8S_CONTAINER: wed-studiozs-app
@@ -71,12 +73,9 @@ jobs:
           aws-region: us-east-1
 
       # Docker compose up automatically pulls and runs the image from ECR
-      - name: Spin Up Smoke Test Container
+      - name: Start services with docker compose
         run: |
-          docker run -d \
-            --name smoke-tests \
-            -p 8000:8000 \
-            $ECR_IMAGE:${{ github.sha }}
+          docker compose -f Docker/docker-compose.yml -f Docker/docker-compose.ci.yml up -d
 
       - name: Wait for app readiness
         run: |
@@ -87,7 +86,8 @@ jobs:
             sleep 1
           done
           if ! curl -sSf http://127.0.0.1:8000/readyz; then
-            docker logs smoke-tests || true
+            docker compose -f Docker/docker-compose.yml -f Docker/docker-compose.ci.yml logs || true
+            docker compose -f Docker/docker-compose.yml -f Docker/docker-compose.ci.yml down -v || true
             exit 1
           fi
 
@@ -96,11 +96,10 @@ jobs:
         run: |
           pytest wed-studiozs/tests -v
 
-      - name: Tear Down Container
+      - name: Tear Down Compose
         if: always()
         run: |
-          docker stop smoke-tests
-          docker rm smoke-tests
+          docker compose -f Docker/docker-compose.yml -f Docker/docker-compose.ci.yml down -v
 
   deploy-to-staging:
     name: Deploy to Staging
@@ -138,13 +137,11 @@ jobs:
           kubectl rollout status \
             deployment/"$K8S_DEPLOYMENT" \
             --namespace "$K8S_NAMESPACE" \
-            --timeout=180s
+            --timeout=5m
+          || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
 
       - name: Show deployed Pods
         run: |
           kubectl get pods \
             --namespace "$K8S_NAMESPACE" \
             -o wide
-        
-
-
