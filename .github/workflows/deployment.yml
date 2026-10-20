@@ -177,13 +177,17 @@ jobs:
 
       - name: Verify rollout
         run: |
-          kubectl rollout status \
+          if ! kubectl rollout status \
             deployment/"$K8S_DEPLOYMENT" \
             --namespace "$K8S_NAMESPACE" \
-            --timeout=5m
-          || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
-            --timeout=5m
-          || (kubectl rollout undo deployment/"$K8S_DEPLOYMENT" --namespace "$K8S_NAMESPACE" && exit 1)
+            --timeout=5m; then
+
+            kubectl rollout undo \
+              deployment/"$K8S_DEPLOYMENT" \
+              --namespace "$K8S_NAMESPACE"
+
+            exit 1
+          fi
 
       - name: Show deployed Pods
         run: |
