@@ -165,7 +165,7 @@ jobs:
       - name: Configure kubectl
         run: |
           aws eks update-kubeconfig \
-            --region "$AWS_REGION" \
+            --region ap-south-1 \
             --name "$EKS_CLUSTER"
 
       - name: Update staging Deployment
