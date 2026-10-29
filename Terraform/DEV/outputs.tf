@@ -1,15 +1,3 @@
-# storage bucket outputs
-output "bucket_id" {
-  description = "Name of the Terraform state bucket"
-  value       = module.s3_bucket.s3_bucket_id
-}
-
-output "bucket_arn" {
-  description = "ARN of the Terraform state bucket"
-  value       = module.s3_bucket.s3_bucket_arn
-}
-
-
 # EKS outputs
 output "cluster_name" {
   description = "Name of the EKS cluster"
@@ -41,4 +29,3 @@ output "cluster_version" {
   description = "Kubernetes version"
   value       = module.eks.cluster_version
 }
-

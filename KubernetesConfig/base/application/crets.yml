@@ -1,0 +1,27 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: encrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: tempmailmike01@gmail.com
+    privateKeySecretRef:
+      name: encrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wedstudiozs-tls
+  namespace: public-gateway
+spec:
+  secretName: wedstudiozs-tls
+  dnsNames:
+    - wedstudiozs.com
+  issuerRef:
+    name: encrypt-prod
+    kind: ClusterIssuer

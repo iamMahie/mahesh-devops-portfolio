@@ -20,6 +20,25 @@ spec:
         fsGroup: 999
         seccompProfile: 
           type: RuntimeDefault
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15-alpine
+          command:
+            - /bin/sh
+            - -c
+            - until pg_isready -h postgres.wed-studiozs.svc.cluster.local -U wedstudiozs -d wed-studiozs; do sleep 2; done
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
       containers:
         - name: db-migration
           securityContext: 
@@ -27,8 +46,8 @@ spec:
             allowPrivilegeEscalation: false
             capabilities: 
               drop: ["ALL"]
-          image: docker.io/maheshcherakapu/wed-studiozs-app:v1.0 # Use the same image as the application for consistency
-          imagePullPolicy: IfNotPresent # Only pull the image if it is not already present on the node
+          image: public.ecr.aws/v3k4k2v5/devops_projects:e9c092677149cab59199c82f46f0d9a1d13b2efa
+          imagePullPolicy: IfNotPresent
           command: ["alembic", "upgrade", "head"] # Command to run the database migrations
           env:
             - name: POSTGRES_USER
@@ -43,3 +62,10 @@ spec:
               valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: SECRET_KEY } }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: wed-studiozs-secret, key: DATABASE_URL } }
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

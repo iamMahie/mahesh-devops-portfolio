@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: wed-studiozs-deployment
   minReplicas: 2 
-  maxReplicas: 5
+  maxReplicas: 3
   metrics:
   # Scale based on CPU utilization.
   - type: Resource

@@ -1,3 +1,4 @@
+# Create EKS resources
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 21.0"
@@ -60,6 +61,12 @@ module "eks" {
   }
   */
 
+  # Declare a distinct KMS Key and a fresh Custom Alias name
+  kms_key_aliases = [
+    "wed-studiozs",
+    "wed-studiozs-s3",
+    "wed-studiozs-secrets"
+  ]
   tags = {
     cluster = "wed-studiozs-application"
   }

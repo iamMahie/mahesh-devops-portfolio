@@ -13,10 +13,13 @@ spec:
 
   ingress:
     - from:
-        - namespaceSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: traefik
           podSelector:
             matchLabels:
-              gateway.networking.k8s.io/gateway-name: application-gateway
+              app.kubernetes.io/name: traefik
+              app.kubernetes.io/instance: traefik-traefik
       ports:
         - protocol: TCP
           port: 8000

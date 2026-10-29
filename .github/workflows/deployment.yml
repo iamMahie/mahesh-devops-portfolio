@@ -168,29 +168,86 @@ jobs:
             --region ap-south-1 \
             --name "$EKS_CLUSTER"
 
-      - name: Update staging Deployment
+      - name: Install Gateway API CRDs
         run: |
-          kubectl set image \
-            deployment/"$K8S_DEPLOYMENT" \
-            "$K8S_CONTAINER"="$ECR_IMAGE:$GITHUB_SHA" \
-            --namespace "$K8S_NAMESPACE"
+          kubectl apply \
+            --server-side \
+            -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Traefik Gateway controller
+        run: |
+          helm repo add traefik https://traefik.github.io/charts
+          helm repo update
+          helm upgrade --install traefik traefik/traefik \
+            --version 42.1.0 \
+            --namespace traefik \
+            --create-namespace \
+            --set providers.kubernetesGateway.enabled=true \
+            --set gateway.enabled=false \
+            --set gatewayClass.enabled=true \
+            --set gatewayClass.name=traefik \
+            --wait \
+            --timeout 10m
+
+      - name: Render release image
+        run: |
+          kubectl kustomize KubernetesConfig/base \
+            | sed "s|$ECR_IMAGE:[^[:space:]]*|$ECR_IMAGE:$GITHUB_SHA|g" \
+            > /tmp/wed-studiozs.yaml
+
+      - name: Remove previous migration Job
+        run: |
+          kubectl delete job db-migration-job \
+            --namespace "$K8S_NAMESPACE" \
+            --ignore-not-found
+
+      - name: Deploy staging resources
+        run: |
+          kubectl apply -f /tmp/wed-studiozs.yaml
+
+      - name: Wait for PostgreSQL
+        run: |
+          kubectl rollout status \
+            statefulset/postgres \
+            --namespace "$K8S_NAMESPACE" \
+            --timeout=10m
+
+      - name: Wait for database migration
+        run: |
+          kubectl wait \
+            --for=condition=complete \
+            job/db-migration-job \
+            --namespace "$K8S_NAMESPACE" \
+            --timeout=10m
 
       - name: Verify rollout
         run: |
-          if ! kubectl rollout status \
+          kubectl rollout status \
             deployment/"$K8S_DEPLOYMENT" \
             --namespace "$K8S_NAMESPACE" \
-            --timeout=5m; then
-
-            kubectl rollout undo \
-              deployment/"$K8S_DEPLOYMENT" \
-              --namespace "$K8S_NAMESPACE"
-
-            exit 1
-          fi
+            --timeout=10m
 
       - name: Show deployed Pods
         run: |
           kubectl get pods \
             --namespace "$K8S_NAMESPACE" \
             -o wide
+
+      - name: Show deployment diagnostics
+        if: failure()
+        run: |
+          kubectl get pods,job,pvc,svc,endpoints \
+            --namespace "$K8S_NAMESPACE" \
+            -o wide || true
+          kubectl get events \
+            --namespace "$K8S_NAMESPACE" \
+            --sort-by=.lastTimestamp || true
+          kubectl logs job/db-migration-job \
+            --namespace "$K8S_NAMESPACE" \
+            --all-containers \
+            --tail=200 || true
+          kubectl describe deployment/"$K8S_DEPLOYMENT" \
+            --namespace "$K8S_NAMESPACE" || true

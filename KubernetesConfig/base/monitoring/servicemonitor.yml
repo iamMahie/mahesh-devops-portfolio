@@ -1,0 +1,17 @@
+# ServiceMonitor tells Prometheus what to scrape
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: wed-studiozs-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: wed-studiozs-app            # Match Services with this label
+  namespaceSelector:
+    matchNames:
+    - wed-studiozs
+  endpoints:
+  - port: http                   # Named port from the Service
+    interval: 30s                # Scrape every 30 seconds
+    path: /metrics

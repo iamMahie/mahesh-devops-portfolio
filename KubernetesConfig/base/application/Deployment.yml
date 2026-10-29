@@ -10,7 +10,7 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1           # Create up to 2 additional pods during the update
+      maxSurge: 1           # Create up to 1 additional pods during the update
       maxUnavailable: 0     # Allow up to 0 pod to be unavailable during the update
   # Selector is used to identify the pods that belong to this deployment
   selector:
@@ -42,8 +42,8 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-          image: docker.io/maheshcherakapu/wed-studiozs-app:v1.0 # Use the image built from the Dockerfile for the application
-          imagePullPolicy: IfNotPresent # Only pull the image if it is not already present on the node
+          image: public.ecr.aws/v3k4k2v5/devops_projects:e9c092677149cab59199c82f46f0d9a1d13b2efa
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           env:
@@ -108,6 +108,8 @@ kind: Service
 metadata:
   name: wed-studiozs-service
   namespace: wed-studiozs
+  labels:                         # <-- ADDED: ServiceMonitor target labels
+      app: wed-studiozs-app  
 spec:
   type: ClusterIP # The service is only accessible within the cluster
   selector:

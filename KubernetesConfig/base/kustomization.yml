@@ -6,11 +6,15 @@ resources:
   - application/ConfigMap.yml
   - application/Deployment.yml
   - application/Migration-Job.yml
-  - application/API-Gateway.yml
+  - application/Application-Gateway.yml
   - application/HTTPRoute.yml
   - application/default-deny-all-policy.yml
   - application/allow-traffic-policy.yml
   - application/LimitResources.yml
   - application/HorizontalPodAutoScalar.yml
+  - application/Secret.yml
   - database/Pg-Service.yml
   - database/Pg-StatefullSet.yml
+  - database/StorageClass.yml
+  - monitoring/servicemonitor.yml
+  

@@ -5,10 +5,10 @@ metadata:
   namespace: wed-studiozs
 spec:
   hard:
-    requests.cpu: "3"          # Total CPU requests across all pods in the namespace
-    requests.memory: "20Gi"    # Total memory requests across all pods in the namespace
-    limits.cpu: "5"           # Total CPU limits across all pods in the namespace
-    limits.memory: "30Gi"     # Total memory limits across all pods in the namespace
+    requests.cpu: "4"          # Total CPU requests across all pods in the namespace
+    requests.memory: "4Gi"    # Total memory requests across all pods in the namespace
+    limits.cpu: "8"           # Covers HPA max replicas, one rollout surge pod, PostgreSQL, and migrations
+    limits.memory: "8Gi"     # Total memory limits across all pods in the namespace
     pods: "10"                # Maximum number of pods that can be created in the namespace
     services: "5"             # Maximum number of services that can be created in the namespace
     persistentvolumeclaims: "4"  # Maximum number of PVC's that can be created
@@ -35,4 +35,3 @@ spec:
     min:                # Minimum resource required for containers
       cpu: "100m"
       memory: "64Mi"
-
