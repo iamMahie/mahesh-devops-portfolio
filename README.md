@@ -18,6 +18,9 @@ ConfigMaps/Secrets for all config — nothing hardcoded
 Resource requests/limits + readiness/liveness probes tuned
 Horizontal Pod Autoscaler configured
 
+[Docker](./Docker/README.md)
+[Kubernetes](./KubernetesConfig/README.md)
+
 ***CI/CD***
 
 Stages: lint/test → build → push to ECR → deploy to EKS
@@ -25,8 +28,12 @@ Different behavior for PR (test only) vs merge to main (full deploy)
 Auth to AWS via OIDC — no long-lived access keys as secrets.
 Images tagged with git SHA, never latest
 
-***IaC: Terraform + Bicep***
+[CI/CD Implementation](./github/README.md)
+
+***IaC: Terraform***
 
 Modular structure, not one giant main.tf
 Remote state in S3 with DynamoDB locking
+
+[IAC using Terraform](./Terraform/README.md)
 
