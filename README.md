@@ -12,11 +12,11 @@ Bootstrap CDN dependency.
 
 ***Containerization: Docker + Kubernetes***
 
-Multi-stage Dockerfile, non-root user, image size actually optimized
-Deployment + Service + Ingress
-ConfigMaps/Secrets for all config — nothing hardcoded
-Resource requests/limits + readiness/liveness probes tuned
-Horizontal Pod Autoscaler configured
+* Multi-stage Dockerfile, non-root user, image size actually optimized
+* Deployment + Service + Ingress
+* ConfigMaps/Secrets for all config — nothing hardcoded
+* Resource requests/limits + readiness/liveness probes tuned
+* Horizontal Pod Autoscaler configured
 
 [Docker](./Docker/README.md)
 
@@ -25,17 +25,17 @@ Horizontal Pod Autoscaler configured
 
 ***CI/CD***
 
-Stages: lint/test → build → push to ECR → deploy to EKS
-Different behavior for PR (test only) vs merge to main (full deploy)
-Auth to AWS via OIDC — no long-lived access keys as secrets.
-Images tagged with git SHA, never latest
+* Stages: lint/test → build → push to ECR → deploy to EKS
+* Different behavior for PR (test only) vs merge to main (full deploy)
+* Auth to AWS via OIDC — no long-lived access keys as secrets.
+* Images tagged with git SHA, never latest
 
 [CI/CD Implementation](./github/README.md)
 
 ***IaC: Terraform***
 
-Modular structure, not one giant main.tf
-Remote state in S3 with DynamoDB locking
+* Modular structure, not one giant main.tf
+* Remote state in S3 with DynamoDB locking
 
 [IAC using Terraform](./Terraform/README.md)
 
