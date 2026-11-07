@@ -18,8 +18,9 @@ ConfigMaps/Secrets for all config — nothing hardcoded
 Resource requests/limits + readiness/liveness probes tuned
 Horizontal Pod Autoscaler configured
 
-[Docker -> Readme](./Docker/README.md)
-[Kubernetes -> Readme](./KubernetesConfig/README.md)
+[Docker](./Docker/README.md)
+
+[Kubernetes](./KubernetesConfig/README.md)
 
 ***CI/CD***
 
