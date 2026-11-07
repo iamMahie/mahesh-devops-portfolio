@@ -22,6 +22,7 @@ Horizontal Pod Autoscaler configured
 
 [Kubernetes](./KubernetesConfig/README.md)
 
+
 ***CI/CD***
 
 Stages: lint/test → build → push to ECR → deploy to EKS
