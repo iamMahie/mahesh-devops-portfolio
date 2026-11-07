@@ -8,7 +8,7 @@ Bootstrap CDN dependency.
 
 [Read the Application Documentation](./wed-studiozs/README.md)
 
-*** DevOps Stack ***
+***DevOps Stack***
 
 # Containerization: Docker + Kubernetes
 
