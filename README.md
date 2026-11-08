@@ -67,5 +67,3 @@ aws eks update-kubeconfig --name [fill] --region ap-south-1
 - In-cluster PostgreSQL (single replica): Amazon RDS would be the production choice
 - t3.small nodes: cost-optimized, limits pod density
 
-## Troubleshooting
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
