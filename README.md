@@ -1,64 +1,69 @@
-# Mahesh Devops Portfolio
+# FastAPI on Amazon EKS — Terraform, Docker & GitHub Actions
 
-*** WED STUDIOZS ***
-A photography website and studio workspace, served by one FastAPI application.
-Jinja templates, local CSS, and plain JavaScript keep the frontend in the same
-deployable artifact. There is no Node build, separate frontend service, or
-Bootstrap CDN dependency.
+Infrastructure, containerization, and CI/CD for a FastAPI + PostgreSQL application on Amazon EKS.
+The application code (`wed-studiozs/`) was generated with GitHub Copilot; the infrastructure,
+Docker, Kubernetes, and pipeline work is my own.
 
-[Read the Application Documentation](./wed-studiozs/README.md)
+## Architecture
+![Architecture](docs/images/architecture.png) <!-- [fill] -->
 
-*** Hands-On DevOps Stack ***
-Format: One project, built end-to-end, not tutorial-followed.
+GitHub Actions ──(OIDC)──► AWS IAM
+   ├─ CI: ruff → pytest (80% coverage) → build → Trivy → SBOM
+   └─ CD: push to ECR → compose smoke test → approval → deploy to EKS
+EKS (private subnets) ─► Traefik (Gateway API, TLS via cert-manager) ─► FastAPI pods
+                                                  └─► PostgreSQL StatefulSet (encrypted gp3)
 
-# Containerization: Docker + Kubernetes
+## Tech Stack
+Terraform · AWS (VPC, EKS, IAM, ECR, S3) · Docker · Kubernetes (Kustomize, Gateway API) · Traefik ·
+cert-manager · Prometheus · GitHub Actions · Trivy · Syft · FastAPI · PostgreSQL · Alembic
 
-Build: Take any app with a database dependency (a simple API + Postgres/Redis works fine) and deploy it to EKS, production-style — not "it runs."
+## Capabilities
+**Infrastructure (Terraform)**
+- Custom VPC module: 2 public + 2 private subnets across 2 AZs, NAT gateway
+- EKS 1.33 (AL2023 managed nodes, IMDSv2) with EBS CSI and metrics-server add-ons
+- GitHub OIDC provider, least-privilege CI roles, EKS access entries
+- S3 remote state with versioning, TLS-only policy, native state locking
+- `fmt`, `validate`, `plan` on every pull request
 
-Requirements that separate this from a tutorial:
+**Container**
+- Multi-stage build, digest-pinned base image, non-root user, BuildKit cache, HEALTHCHECK
+- Compose stack with DB healthcheck and gated migration service
 
-Multi-stage Dockerfile, non-root user, image size actually optimized
-Deployment + Service + Ingress (not just a bare LoadBalancer)
-ConfigMaps/Secrets for all config — nothing hardcoded
-Resource requests/limits + readiness/liveness probes tuned, not copy-pasted defaults
-Horizontal Pod Autoscaler configured and tested — generate load, watch it actually scale
+**Kubernetes**
+- Non-root, read-only filesystem, dropped capabilities, seccomp, Pod Security Admission labels
+- Startup/readiness/liveness probes, resource limits, zero-downtime rolling updates, HPA
+- ResourceQuota, LimitRange, default-deny NetworkPolicies
+- Alembic migration Job before rollout
+- Secrets from AWS Secrets Manager via External Secrets
+- `/metrics` scraped by Prometheus via ServiceMonitor
 
-# CI/CD Deep Dive
+**CI/CD**
+- Images tagged with the commit SHA; actions pinned to SHAs
+- Vulnerability scan gates the image push
+- Deploy to staging behind GitHub Environment approval, with automatic rollback on failed rollout
 
-Build: Automate Day 1's deploy with GitHub Actions.
+## Deployment
+```bash
+cd Terraform/storage && terraform init && terraform apply          # state bucket
+cd ../DEV && cp terraform.tfvars.example terraform.tfvars
+terraform init && terraform apply                                  # VPC, EKS, IAM, add-ons
+aws eks update-kubeconfig --name [fill] --region ap-south-1
+# App deploys via the "Continuous Deployment" workflow
+```
 
-Requirements:
+## Validation
+- Local: `docker compose up` → `curl localhost:8000/readyz`
+- Cluster: `kubectl get pods,gateway,httproute -n [fill]`; `kubectl rollout status deploy/[fill]`
+- Pipeline: [fill: link to green CI run] · [fill: link to green CD run]
 
-Stages: lint/test → build → push to ECR → deploy to EKS
-Different behavior for PR (test only) vs merge to main (full deploy)
-Auth to AWS via OIDC — no long-lived access keys as secrets. This one detail is a real interview differentiator.
-Images tagged with git SHA, never latest
+## Evidence
+- ![CI run](docs/images/ci-green.png) <!-- [fill] -->
+- ![CD run](docs/images/cd-green.png) <!-- [fill] -->
+- ![kubectl get pods](docs/images/kubectl-pods.png) <!-- [fill] -->
+- ![App via HTTPS](docs/images/app-browser.png) <!-- [fill] -->
 
-# IaC: Terraform + Bicep
+## Design Trade-offs
+- Single NAT gateway: lower cost, single-AZ egress dependency
+- In-cluster PostgreSQL (single replica): Amazon RDS would be the production choice
+- t3.small nodes: cost-optimized, limits pod density
 
-Honest scoping note: deep Terraform and deep Bicep in one day isn't realistic. Split the effort instead of splitting it evenly.
-
-Main build (Terraform, AWS): Rewrite Day 1's EKS + VPC as Terraform modules.
-
-Modular structure, not one giant main.tf
-Remote state in S3 with DynamoDB locking
-Destroy and rebuild the cluster from code only — no manual console steps left
-
-Lighter build (Bicep, Azure): One resource group with a storage account + minimal AKS cluster (control plane is free — keep node size/count small). The goal isn't depth, it's being able to explain Bicep vs. Terraform trade-offs in an interview.
-
-# Monitoring Deep Dive
-
-Build: Instrument Day 1's cluster with Prometheus + Grafana via Helm.
-
-Requirements:
-
-Scrape both cluster metrics and app-level metrics (expose a /metrics endpoint from your app)
-At least 2 real dashboards — not the untouched default templates
-An Alertmanager rule that fires on something real (error rate spike, restart count) and routes to Slack or email
-
-# Bash/Python Automation
-
-Build: Two tools you'd actually use on the job, not toy scripts.
-
-Python: a cluster health-check CLI (boto3 + kubernetes client) — node status, pod restart counts, cert expiry — outputs a report, optionally posts to Slack
-Bash: an ECR cleanup script — deletes images older than N days, except whatever's currently deployed
