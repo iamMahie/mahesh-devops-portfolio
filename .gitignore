@@ -22,6 +22,7 @@ AGENDA.md
 
 .venv/
 .coverage
+**/.impeccable/
 
 # Terraform
 **/.terraform/
