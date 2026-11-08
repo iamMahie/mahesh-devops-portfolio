@@ -5,7 +5,7 @@ The application code (`wed-studiozs/`) was generated with GitHub Copilot; the in
 Docker, Kubernetes, and pipeline work is my own.
 
 ## Architecture
-![Architecture](docs/images/architecture.png) <!-- [fill] -->
+![Architecture](docs/images/Architecture.png)
 
 GitHub Actions ──(OIDC)──► AWS IAM
    ├─ CI: ruff → pytest (80% coverage) → build → Trivy → SBOM
